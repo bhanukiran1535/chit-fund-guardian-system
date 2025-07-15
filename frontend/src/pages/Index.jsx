@@ -1,7 +1,3 @@
-<<<<<<< HEAD:src/pages/Index.jsx
-
-=======
->>>>>>> 1a4d7b7 (loveable check):frontend/src/pages/Index.jsx
 import { useState, useEffect } from 'react';
 import { UserDashboard } from '../components/UserDashboard';
 import { AdminDashboard } from '../components/AdminDashboard';
@@ -13,32 +9,6 @@ const Index = () => {
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-<<<<<<< HEAD:src/pages/Index.jsx
-  useEffect(() => {
-    // Check for existing token and validate
-    const token = localStorage.getItem('token');
-    if (token) {
-      // TODO: Validate token with backend
-      // For now, mock user data
-      setUser({ 
-        id: '1', 
-        email: 'user@example.com', 
-        alias: 'John Doe', 
-        isAdmin: false 
-      });
-    }
-    setIsLoading(false);
-  }, []);
-
-  const handleLogin = (userData) => {
-    setUser(userData);
-    localStorage.setItem('token', userData.token);
-  };
-
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem('token');
-=======
   // Check session on load using cookie
   useEffect(() => {
     fetch(`${import.meta.env.VITE_API_BASE_URL}/user/me`, {
@@ -62,7 +32,6 @@ const Index = () => {
       credentials: 'include',
     });
     setUser(null);
->>>>>>> 1a4d7b7 (loveable check):frontend/src/pages/Index.jsx
   };
 
   if (isLoading) {

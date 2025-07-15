@@ -1,15 +1,8 @@
-
 import { useState, useEffect } from 'react';
 import { Users, DollarSign, Calendar, AlertCircle, Plus, Settings } from 'lucide-react';
 import { AdminRequests } from './AdminRequests';
 import { GroupManagement } from './GroupManagement';
 import './AdminDashboard.css';
-<<<<<<< HEAD:src/components/AdminDashboard.jsx
-
-export const AdminDashboard = ({ user }) => {
-  const [activeTab, setActiveTab] = useState('requests');
-  
-=======
 import { CreateGroupForm } from './CreateGroupForm';
 import { AddMemberForm } from './AddMemberForm';
 
@@ -18,7 +11,6 @@ export const AdminDashboard = ({ user }) => {
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [showAddMemberForm, setAddMemberForm] = useState(false);
 
->>>>>>> 1a4d7b7 (loveable check):frontend/src/components/AdminDashboard.jsx
   const [stats, setStats] = useState({
     totalGroups: 0,
     totalMembers: 0,
@@ -92,13 +84,9 @@ export const AdminDashboard = ({ user }) => {
       {/* Admin Welcome Section */}
       <div className="welcome-section admin">
         <h2 className="welcome-title">Admin Dashboard</h2>
-<<<<<<< HEAD:src/components/AdminDashboard.jsx
-        <p className="welcome-subtitle">Manage chit fund groups, members, and approve requests</p>
-=======
         <p className="welcome-subtitle">
           Manage chit fund groups, members, and approve requests
         </p>
->>>>>>> 1a4d7b7 (loveable check):frontend/src/components/AdminDashboard.jsx
       </div>
 
       {/* Admin Stats Cards */}
@@ -132,28 +120,14 @@ export const AdminDashboard = ({ user }) => {
             <span className="stat-label">Monthly Collection</span>
             <DollarSign className="stat-icon" />
           </div>
-<<<<<<< HEAD:src/components/AdminDashboard.jsx
-          <div className="stat-value purple">₹{stats.monthlyCollection.toLocaleString()}</div>
-=======
           <div className="stat-value purple">
             ₹{stats.monthlyCollection.toLocaleString()}
           </div>
->>>>>>> 1a4d7b7 (loveable check):frontend/src/components/AdminDashboard.jsx
         </div>
       </div>
 
       {/* Admin Actions */}
       <div className="admin-actions">
-<<<<<<< HEAD:src/components/AdminDashboard.jsx
-        <button className="action-btn primary">
-          <Plus className="btn-icon" />
-          Create New Group
-        </button>
-        <button className="action-btn secondary">
-          <Users className="btn-icon" />
-          Add Member
-        </button>
-=======
         <button
           className="action-btn primary"
           onClick={() => setShowCreateForm(true)}
@@ -176,7 +150,6 @@ export const AdminDashboard = ({ user }) => {
             <AddMemberForm onClose={() => setAddMemberForm(false)} />
         )}
 
->>>>>>> 1a4d7b7 (loveable check):frontend/src/components/AdminDashboard.jsx
         <button className="action-btn secondary">
           <Settings className="btn-icon" />
           Settings
@@ -186,23 +159,6 @@ export const AdminDashboard = ({ user }) => {
       {/* Admin Content Tabs */}
       <div className="tabs-container">
         <div className="tabs-list">
-<<<<<<< HEAD:src/components/AdminDashboard.jsx
-          <button 
-            className={`tab ${activeTab === 'requests' ? 'active' : ''}`}
-            onClick={() => setActiveTab('requests')}
-          >
-            Pending Requests
-          </button>
-          <button 
-            className={`tab ${activeTab === 'groups' ? 'active' : ''}`}
-            onClick={() => setActiveTab('groups')}
-          >
-            Group Management
-          </button>
-          <button 
-            className={`tab ${activeTab === 'members' ? 'active' : ''}`}
-            onClick={() => setActiveTab('members')}
-=======
           <button
             className={`tab ${activeTab === "requests" ? "active" : ""}`}
             onClick={() => setActiveTab("requests")}
@@ -218,25 +174,12 @@ export const AdminDashboard = ({ user }) => {
           <button
             className={`tab ${activeTab === "members" ? "active" : ""}`}
             onClick={() => setActiveTab("members")}
->>>>>>> 1a4d7b7 (loveable check):frontend/src/components/AdminDashboard.jsx
           >
             Member Management
           </button>
         </div>
 
         <div className="tab-content">
-<<<<<<< HEAD:src/components/AdminDashboard.jsx
-          {activeTab === 'requests' && <AdminRequests />}
-          {activeTab === 'groups' && <GroupManagement />}
-          {activeTab === 'members' && (
-            <div className="placeholder-card">
-              <div className="card-header">
-                <h2 className="card-title">Member Management</h2>
-                <p className="card-subtitle">Manage all members across groups</p>
-              </div>
-              <div className="card-content">
-                <p className="placeholder-text">Member management interface coming soon...</p>
-=======
           {activeTab === "requests" && <AdminRequests />}
           {activeTab === "groups" && <GroupManagement />}
           {activeTab === "members" && (
@@ -251,7 +194,6 @@ export const AdminDashboard = ({ user }) => {
                 <p className="placeholder-text">
                   Member management interface coming soon...
                 </p>
->>>>>>> 1a4d7b7 (loveable check):frontend/src/components/AdminDashboard.jsx
               </div>
             </div>
           )}
