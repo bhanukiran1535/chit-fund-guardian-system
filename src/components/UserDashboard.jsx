@@ -1,0 +1,1 @@
+export { UserDashboard } from '../../frontend/src/components/UserDashboard.jsx';

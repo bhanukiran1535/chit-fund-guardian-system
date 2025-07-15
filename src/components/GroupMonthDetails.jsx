@@ -1,0 +1,1 @@
+export { GroupMonthDetails } from '../../frontend/src/components/GroupMonthDetails.jsx';

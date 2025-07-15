@@ -1,0 +1,1 @@
+export { AdminDashboard } from '../../frontend/src/components/AdminDashboard.jsx';
