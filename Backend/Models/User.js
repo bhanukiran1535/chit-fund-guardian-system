@@ -1,0 +1,60 @@
+const mongoose = require('mongoose')
+const validator = require('validator')
+const bcrypt = require('bcrypt')
+const jwt = require("jsonwebtoken")
+const SECRET_KEY = process.env.JWT_SECRET;
+
+const UserSchema = mongoose.Schema({
+ userId:{
+  type: Number,
+  unique:true,
+  required: true
+ },
+ password:{
+  type: String,
+  required: true
+ },
+ firstName:{
+  type: String,
+  required: true,
+ },
+ lastName:{
+  type: String,
+ },
+alias:{
+  type: String,
+  unique: true,  // ✅ unique: true means no two docs can have the same value, including null
+  sparse: true   // ✅ Allows multiple docs with null/undefined
+ },
+ email:{
+  type: String,
+  required: true,
+  // match: /.+\@.+\..+/,
+  validate: {
+    validator: validator.isEmail,
+    message: "Invalid email format"
+  }
+ },
+ phoneNo:{
+  type: String,
+  required: true,
+ },
+ isAdmin:{
+  type: Boolean,
+  default: false
+ }
+})
+UserSchema.methods.getJWT = async function () {   // we can't use 'this' key word in arrow function
+    const token = await jwt.sign({_id:this._id}, SECRET_KEY, { expiresIn: "1h" });
+    return token;
+};
+UserSchema.methods.compareHash = async function (passwordInputedbyUser) {   // we can't use 'this' key word in arrow function
+  const isPasswordValid =await bcrypt.compare(passwordInputedbyUser, this.password);
+  return isPasswordValid;
+};
+UserSchema.methods.createpasswordHash = async function (newPassword) {   // we can't use 'this' key word in arrow function
+  const passwordHash =await bcrypt.hash(newPassword,10);
+  return passwordHash;
+};
+const UserModel = new mongoose.model('User',UserSchema);
+module.exports = UserModel;

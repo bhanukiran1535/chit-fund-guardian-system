@@ -1,0 +1,231 @@
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.welcome-section {
+  background: linear-gradient(135deg, #2563eb 0%, #4f46e5 100%);
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  color: white;
+}
+
+.welcome-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0 0 0.5rem 0;
+}
+
+.welcome-subtitle {
+  color: #bfdbfe;
+  margin: 0;
+}
+
+<<<<<<< HEAD:src/components/UserDashboard.css
+=======
+.upcoming-banner {
+  margin: 2rem 0;
+  padding: 1rem;
+  background: linear-gradient(to right, #dbeafe, #eff6ff);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.banner-title {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #1e3a8a;
+}
+
+.banner-slider {
+  display: flex;
+  gap: 1rem;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 0.5rem;
+}
+
+.banner-card {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 1rem;
+  min-width: 250px;
+  flex: 0 0 auto;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: 1px solid #e0e7ff;
+  transition: transform 0.3s ease;
+}
+
+.banner-card:hover {
+  transform: translateY(-4px);
+}
+
+.banner-card h3 {
+  color: #2563eb;
+  margin-bottom: 0.5rem;
+}
+
+.banner-card p {
+  font-size: 0.9rem;
+  margin: 0.25rem 0;
+}
+
+.join-btn {
+  margin-top: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  background-color: #2563eb;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.join-btn:hover {
+  background-color: #1d4ed8;
+}
+
+
+>>>>>>> 1a4d7b7 (loveable check):frontend/src/components/UserDashboard.css
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.stat-card {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.stat-icon {
+  width: 1rem;
+  height: 1rem;
+  color: #9ca3af;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.stat-value.blue { color: #2563eb; }
+.stat-value.green { color: #059669; }
+.stat-value.orange { color: #d97706; }
+.stat-value.red { color: #dc2626; }
+
+.tabs-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.tabs-list {
+  display: flex;
+  background-color: #f3f4f6;
+  border-radius: 0.375rem;
+  padding: 0.25rem;
+}
+
+.tab {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab.active {
+  background: white;
+  color: #374151;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tab-content {
+  margin-top: 0.5rem;
+}
+
+.groups-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+  .groups-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+<<<<<<< HEAD:src/components/UserDashboard.css
+=======
+
+.toast-message {
+  position: fixed;
+  top: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #2563eb;
+  color: white;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  z-index: 1000;
+  font-size: 0.95rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  animation: fadeInOut 3s ease;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; top: 0.5rem; }
+  10% { opacity: 1; top: 1rem; }
+  90% { opacity: 1; top: 1rem; }
+  100% { opacity: 0; top: 0.5rem; }
+}
+
+.custom-input {
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.4rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+>>>>>>> 1a4d7b7 (loveable check):frontend/src/components/UserDashboard.css
