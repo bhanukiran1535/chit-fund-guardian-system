@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Users, DollarSign, Calendar, AlertCircle, Plus, Settings } from 'lucide-react';
 import { AdminRequests } from './AdminRequests';
 import { GroupManagement } from './GroupManagement';
@@ -19,13 +19,73 @@ export const AdminDashboard = ({ user }) => {
   const [showAddMemberForm, setAddMemberForm] = useState(false);
 
 >>>>>>> 1a4d7b7 (loveable check):frontend/src/components/AdminDashboard.jsx
-  // Mock admin stats
-  const [stats] = useState({
-    totalGroups: 5,
-    totalMembers: 87,
-    pendingRequests: 12,
-    monthlyCollection: 435000
+  const [stats, setStats] = useState({
+    totalGroups: 0,
+    totalMembers: 0,
+    pendingRequests: 0,
+    monthlyCollection: 0
   });
+
+  const API_BASE = import.meta.env.VITE_API_BASE_URL;
+
+  useEffect(() => {
+    const fetchAdminStats = async () => {
+      try {
+        // Fetch all groups
+        const groupsRes = await fetch(`${API_BASE}/group/all`, {
+          credentials: 'include'
+        });
+        const groupsData = await groupsRes.json();
+        
+        // Fetch all pending requests
+        const requestsRes = await fetch(`${API_BASE}/request/all`, {
+          credentials: 'include'
+        });
+        const requestsData = await requestsRes.json();
+        
+        // Fetch payment data for this month
+        const paymentsRes = await fetch(`${API_BASE}/payment/monthly-collection`, {
+          credentials: 'include'
+        });
+        const paymentsData = await paymentsRes.json();
+
+        if (groupsData.success) {
+          const totalGroups = groupsData.groups.length;
+          const totalMembers = groupsData.groups.reduce((sum, group) => 
+            sum + (group.members?.length || 0), 0);
+          
+          setStats(prev => ({
+            ...prev,
+            totalGroups,
+            totalMembers
+          }));
+        }
+        
+        if (requestsData.success) {
+          const pendingRequests = requestsData.requests.filter(
+            r => r.status === 'pending'
+          ).length;
+          
+          setStats(prev => ({
+            ...prev,
+            pendingRequests
+          }));
+        }
+        
+        if (paymentsData.success) {
+          setStats(prev => ({
+            ...prev,
+            monthlyCollection: paymentsData.totalCollection || 0
+          }));
+        }
+        
+      } catch (error) {
+        console.error('Failed to fetch admin stats:', error);
+      }
+    };
+
+    fetchAdminStats();
+  }, [API_BASE]);
 
   return (
     <div className="admin-dashboard">

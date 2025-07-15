@@ -21,11 +21,11 @@ export const UserDashboard = ({ user }) => {
   // Mock data - replace with actual API calls
 =======
 >>>>>>> 1a4d7b7 (loveable check):frontend/src/components/UserDashboard.jsx
-  const [stats] = useState({
-    activeGroups: 2,
-    totalPaid: 25000,
-    upcomingPayments: 3,
-    pendingRequests: 1
+  const [stats, setStats] = useState({
+    activeGroups: 0,
+    totalPaid: 0,
+    upcomingPayments: 0,
+    pendingRequests: 0
   });
 
 <<<<<<< HEAD:src/components/UserDashboard.jsx
@@ -176,6 +176,21 @@ useEffect(() => {
   });
 
   setMergedGroups(computedGroups);
+  
+  // Calculate real-time stats
+  const activeGroups = computedGroups.filter(g => g.status === 'active').length;
+  const totalPaid = monthRecords
+    .filter(m => m.status === 'paid')
+    .reduce((sum, m) => sum + (m.amount || 0), 0);
+  const upcomingPayments = monthRecords
+    .filter(m => m.status === 'due' || m.status === 'pending').length;
+  
+  setStats({
+    activeGroups,
+    totalPaid,
+    upcomingPayments,
+    pendingRequests: 0 // This would need API call to get pending join requests
+  });
 }, [monthRecords]);
 
 
