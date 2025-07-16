@@ -1,1 +1,0 @@
-export { default } from '../../frontend/src/pages/Index.jsx';

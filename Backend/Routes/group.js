@@ -39,20 +39,25 @@ groupRoute.get('/allGroups', async (req, res) => {
     const { status } = req.query;
     const currentDate = new Date();
 
-    const allGroups = await Group.find().select('-__v -updatedAt -createdAt -members -foremanCommission');
+    const allGroups = await Group.find().select('-__v -updatedAt -createdAt -foremanCommission');
 
-    // Compute group status dynamically
-    const filteredGroups = allGroups.filter(group => {
+    // Attach status to each group
+    const groupsWithStatus = allGroups.map(group => {
       const groupStart = new Date(group.startMonth);
       const groupEnd = new Date(groupStart);
       groupEnd.setMonth(groupEnd.getMonth() + group.tenure);
 
-      if (status === 'upcoming') return groupStart > currentDate;
-      if (status === 'active') return groupStart <= currentDate && groupEnd >= currentDate;
-      if (status === 'completed') return groupEnd < currentDate;
-      return true; // if no status given, return all
+      let computedStatus = '';
+      if (groupStart > currentDate) computedStatus = 'upcoming';
+      else if (groupStart <= currentDate && groupEnd >= currentDate) computedStatus = 'active';
+      else if (groupEnd < currentDate) computedStatus = 'completed';
+      return { ...group.toObject(), status: computedStatus };
     });
 
+    // Filter based on query param if provided
+    const filteredGroups = status
+      ? groupsWithStatus.filter(group => group.status === status)
+      : groupsWithStatus;
     res.status(200).json({ success: true, groups: filteredGroups });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -62,7 +67,6 @@ groupRoute.get('/allGroups', async (req, res) => {
 groupRoute.get('/my', userAuth, async (req, res) => {
   try {
     const userId = req.user._id;
-
     const groups = await Group.find({ "members.userId": userId })
       .select('-__v -createdAt -updatedAt -foremanCommission')
       .lean(); // use lean for better performance and easier manipulation

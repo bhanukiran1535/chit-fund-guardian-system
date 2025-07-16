@@ -1,61 +1,48 @@
-
+import { useEffect, useState } from 'react';
 import { Calendar, Users, Settings, Eye, Plus } from 'lucide-react';
 import './GroupManagement.css';
 
 export const GroupManagement = () => {
-  // Mock groups data
-  const groups = [
-    {
-      id: '1',
-      groupNo: 'G001',
-      chitValue: 100000,
-      tenure: 20,
-      startMonth: 'January 2024',
-      currentMonth: 3,
-      totalMembers: 20,
-      status: 'active',
-      foremanCommission: 2000,
-      monthlyCollection: 100000
-    },
-    {
-      id: '2',
-      groupNo: 'G002',
-      chitValue: 50000,
-      tenure: 10,
-      startMonth: 'March 2024',
-      currentMonth: 1,
-      totalMembers: 10,
-      status: 'active',
-      foremanCommission: 1000,
-      monthlyCollection: 50000
-    },
-    {
-      id: '3',
-      groupNo: 'G003',
-      chitValue: 200000,
-      tenure: 24,
-      startMonth: 'February 2024',
-      currentMonth: 2,
-      totalMembers: 24,
-      status: 'active',
-      foremanCommission: 4000,
-      monthlyCollection: 200000
-    },
-    {
-      id: '4',
-      groupNo: 'G004',
-      chitValue: 75000,
-      tenure: 15,
-      startMonth: 'December 2023',
-      currentMonth: 15,
-      totalMembers: 15,
-      status: 'completed',
-      foremanCommission: 1500,
-      monthlyCollection: 0
-    }
-  ];
+  const [groups, setGroups] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const getStatusBadge = (status) => {
+
+  const parseStartMonth = (startMonth) => {
+  const [month, year] = startMonth.split(' ');
+  const monthIndex = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ].indexOf(month);
+  return new Date(parseInt(year), monthIndex);
+};
+
+
+const fetchGroups = async () => {
+  try {
+    const statuses = ['active', 'upcoming'];
+
+    const responses = await Promise.all(
+      statuses.map(status =>
+        fetch(`${import.meta.env.VITE_API_BASE_URL}/group/allGroups?status=${status}`, {
+          credentials: 'include',
+        }).then(res => res.json())
+      )
+    );
+
+    const allGroups = responses.flatMap(r => (r.success ? r.groups : []));
+    setGroups(allGroups);
+  } catch (err) {
+    console.error('Failed to fetch groups:', err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  useEffect(() => {
+    fetchGroups();
+  }, []);
+
+  const getStatusBadge = (status) =>{
     const statusClass = `status-badge status-${status}`;
     const statusText = status.charAt(0).toUpperCase() + status.slice(1);
     return <span className={statusClass}>{statusText}</span>;
@@ -80,77 +67,81 @@ export const GroupManagement = () => {
       </div>
       
       <div className="card-content">
-        <div className="table-container">
-          <table className="groups-table">
-            <thead>
-              <tr>
-                <th>Group</th>
-                <th>Chit Value</th>
-                <th>Progress</th>
-                <th>Members</th>
-                <th>Monthly Collection</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {groups.map((group) => (
-                <tr key={group.id}>
-                  <td>
-                    <div className="group-cell">
-                      <div className="group-name">{group.groupNo}</div>
-                      <div className="group-start">Started: {group.startMonth}</div>
-                    </div>
-                  </td>
-                  <td className="chit-value">
-                    ₹{group.chitValue.toLocaleString()}
-                  </td>
-                  <td>
-                    <div className="progress-cell">
-                      <div className="progress-bar">
-                        <div 
-                          className="progress-fill" 
-                          style={{ width: `${(group.currentMonth / group.tenure) * 100}%` }}
-                        ></div>
-                      </div>
-                      <span className="progress-text">
-                        {group.currentMonth}/{group.tenure}
-                      </span>
-                    </div>
-                  </td>
-                  <td>
-                    <div className="members-cell">
-                      <Users className="members-icon" />
-                      <span>{group.totalMembers}</span>
-                    </div>
-                  </td>
-                  <td>
-                    {group.status === 'active' ? (
-                      <span className="collection-active">₹{group.monthlyCollection.toLocaleString()}</span>
-                    ) : (
-                      <span className="collection-completed">Completed</span>
-                    )}
-                  </td>
-                  <td>
-                    {getStatusBadge(group.status)}
-                  </td>
-                  <td>
-                    <div className="actions-cell">
-                      <button className="action-btn secondary">
-                        <Eye className="btn-icon" />
-                        View
-                      </button>
-                      <button className="action-btn secondary">
-                        <Settings className="btn-icon" />
-                        Manage
-                      </button>
-                    </div>
-                  </td>
+        {loading ? (
+          <p>Loading groups...</p>
+        ) : (
+          <div className="table-container">
+            <table className="groups-table">
+              <thead>
+                <tr>
+                  <th>Group</th>
+                  <th>Chit Value</th>
+                  <th>Progress</th>
+                  <th>Members</th>
+                  <th>Monthly Collection</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {groups.map((group) => (
+                  <tr key={group._id}>
+                    <td>
+                      <div className="group-cell">
+                        <div className="group-name">{group.groupNo}</div>
+                        <div className="group-start">Started: {new Date(group.startMonth).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}</div>
+                      </div>
+                    </td>
+                    <td className="chit-value">
+                      ₹{group.chitValue.toLocaleString()}
+                    </td>
+                    <td>
+                      <div className="progress-cell">
+                        <div className="progress-bar">
+                          <div 
+                            className="progress-fill"   
+                            style={{ width: `${(group?.months?.length / group.tenure) * 100}%` }}
+                          ></div>
+                        </div>
+                        <span className="progress-text">
+                          {group?.months?.length}/{group.tenure}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className="members-cell">
+                        <Users className="members-icon" />
+                        <span>{group.members?.length || 0}</span>
+                      </div>
+                    </td>
+                    <td>
+                      {group.status === 'active' ? (
+                        <span className="collection-active">
+                          ₹{group.chitValue.toLocaleString()}
+                        </span>
+                      ) : (
+                        <span className="collection-completed">Completed</span>
+                      )}
+                    </td>
+                    <td>{getStatusBadge(group.status)}</td>
+                    <td>
+                      <div className="actions-cell">
+                        <button className="action-btn secondary">
+                          <Eye className="btn-icon" />
+                          View
+                        </button>
+                        <button className="action-btn secondary">
+                          <Settings className="btn-icon" />
+                          Manage
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
