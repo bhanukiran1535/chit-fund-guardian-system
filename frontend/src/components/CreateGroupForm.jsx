@@ -46,38 +46,57 @@ export const CreateGroupForm = ({ onClose }) => {
       <div className="form-card">
         <h3>Create New Group</h3>
         <form onSubmit={handleSubmit} className="create-group-form">
-          <input
-            type="number"
-            name="chitValue"
-            placeholder="Chit Value"
-            value={groupData.chitValue}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="number"
-            name="tenure"
-            placeholder="Tenure (Months)"
-            value={groupData.tenure}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="startMonth"
-            placeholder="Start Month"
-            value={groupData.startMonth}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="number"
-            name="foremanCommission"
-            placeholder="Foreman Commission %"
-            value={groupData.foremanCommission}
-            onChange={handleChange}
-            required
-          />
+          <div className="input-group">
+            <label htmlFor="chitValue">Chit Value (₹)</label>
+            <input
+              id="chitValue"
+              type="number"
+              name="chitValue"
+              placeholder="Enter total chit value"
+              value={groupData.chitValue}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          
+          <div className="input-group">
+            <label htmlFor="tenure">Tenure (Months)</label>
+            <input
+              id="tenure"
+              type="number"
+              name="tenure"
+              placeholder="Number of months"
+              value={groupData.tenure}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          
+          <div className="input-group">
+            <label htmlFor="startMonth">Start Month</label>
+            <input
+              id="startMonth"
+              type="text"
+              name="startMonth"
+              placeholder="e.g., January 2024"
+              value={groupData.startMonth}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          
+          <div className="input-group">
+            <label htmlFor="foremanCommission">Foreman Commission (%)</label>
+            <input
+              id="foremanCommission"
+              type="number"
+              name="foremanCommission"
+              placeholder="Commission percentage"
+              value={groupData.foremanCommission}
+              onChange={handleChange}
+              required
+            />
+          </div>
 
           <button type="submit">Create Group</button>
           {message && <p className="form-message">{message}</p>}

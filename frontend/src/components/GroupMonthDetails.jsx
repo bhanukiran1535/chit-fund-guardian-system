@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, CreditCard, Clock, CheckCircle, AlertCircle } from 'lucide-react';
+import { Calendar, CreditCard, Clock, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react';
+import { Progress } from './ui/progress';
 import './GroupMonthDetails.css';
 
 export const GroupMonthDetails = () => {
@@ -163,10 +164,33 @@ export const GroupMonthDetails = () => {
   const split = shareAmount / groupInfo.tenure;
   const handleBack = () => nav(-1);
  
+  const completedPayments = months.filter(m => m.status === 'paid').length;
+  const totalMonths = months.length;
+  const progressPercentage = totalMonths > 0 ? (completedPayments / totalMonths) * 100 : 0;
+
   return (
     <div className="month-details-page">
       <button className="back-btn" onClick={handleBack}>← Group List</button>
       <h1>Group {groupInfo.groupNo}: Monthly Breakdown</h1>
+      
+      {/* Progress Section */}
+      <div className="progress-section">
+        <div className="progress-header">
+          <div className="progress-stats">
+            <TrendingUp className="progress-icon" />
+            <span className="progress-text">
+              {completedPayments} of {totalMonths} payments completed
+            </span>
+          </div>
+          <span className="progress-percentage">{Math.round(progressPercentage)}%</span>
+        </div>
+        <Progress value={progressPercentage} className="progress-bar" />
+        <div className="progress-details">
+          <span>Total Amount: ₹{shareAmount.toLocaleString()}</span>
+          <span>Monthly Share: ₹{split.toLocaleString()}</span>
+        </div>
+      </div>
+
       <div className="timeline-container">
         <div className="timeline-bar" />
         {months.map((m, i) => {

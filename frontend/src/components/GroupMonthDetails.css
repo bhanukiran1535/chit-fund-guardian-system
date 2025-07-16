@@ -1,24 +1,81 @@
 .month-details-page {
   padding: 2rem 1rem;
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  color: white;
 }
 
 .back-btn {
-  background: none;
+  background: rgba(255, 255, 255, 0.2);
   border: none;
-  color: #2563eb;
+  color: white;
   font-size: 1rem;
   cursor: pointer;
   margin-bottom: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
 }
 
 h1 {
-  font-size: 1.75rem;
+  font-size: 2rem;
   font-weight: 600;
-  margin-bottom: 2rem;
-  color: #1f2937;
+  margin-bottom: 1.5rem;
+  color: white;
   text-align: center;
+}
+
+/* Progress Section */
+.progress-section {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.progress-stats {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.progress-icon {
+  color: #10b981;
+}
+
+.progress-text {
+  font-weight: 500;
+}
+
+.progress-percentage {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #10b981;
+}
+
+.progress-bar {
+  margin-bottom: 1rem;
+}
+
+.progress-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  opacity: 0.8;
 }
 
 .timeline-container {
