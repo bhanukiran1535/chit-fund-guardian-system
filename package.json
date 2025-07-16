@@ -1,11 +1,25 @@
 {
+  "name": "chit-fund-guardian-system",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
+    "build": "vite build",
+    "build:dev": "vite build --mode development",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "@vitejs/plugin-react-swc": "^3.10.2",
-    "lovable-tagger": "^1.1.8",
     "lucide-react": "^0.462.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.30.1",
     "vite": "^5.4.19"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.0",
+    "lovable-tagger": "^1.1.7"
   }
 }

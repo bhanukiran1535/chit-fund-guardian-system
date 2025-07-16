@@ -49,6 +49,7 @@ requestRoute.get('/my', userAuth, async (req, res) => {
   }
 });
 
+
 requestRoute.post('/withdraw', userAuth, async (req, res) => {
   try {
     const userId = req.user._id;
@@ -74,32 +75,53 @@ requestRoute.post('/withdraw', userAuth, async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
-
-// 1. Send Prebook Request
+// @route POST /request/prebook
 requestRoute.post('/prebook', userAuth, async (req, res) => {
+  const { groupId, monthName, shareAmount } = req.body;
+  const userId = req.user._id;
+
+  if (!groupId || !monthName || !shareAmount) {
+    return res.status(400).json({ success: false, message: 'Missing required fields' });
+  }
+
   try {
-    const { groupId } = req.body;
-    const newRequest = new Request({
-      userId: req.user._id,
+    const existing = await Request.findOne({
+      userId,
       groupId,
-      type: 'month_prebook'
+      monthName,
+      type: 'month_prebook',
+      status: 'pending'
     });
-    await newRequest.save();
-    res.status(200).json({ success: true, message: 'Prebook request sent' });
+
+    if (existing) {
+      return res.status(409).json({ success: false, message: 'Prebook request already exists' });
+    }
+
+    const request = new Request({
+      userId,
+      groupId,
+      type: 'month_prebook',
+      monthName,
+      amount: shareAmount
+    });
+
+    await request.save();
+    res.json({ success: true, message: 'Prebook request sent' });
   } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    console.error('Error creating prebook request:', err);
+    res.status(500).json({ success: false, message: 'Internal Server Error' });
   }
 });
 
 // 2. Send Payment Confirmation Request
 requestRoute.post('/payment', userAuth, async (req, res) => {
   try {
-    const { groupId, monthKey, amount } = req.body;
+    const { groupId, monthName, amount } = req.body;
     const newRequest = new Request({
       userId: req.user._id,
       groupId,
       type: 'confirm_cash_payment',
-      monthKey,
+      monthName,
       amount
     });
     await newRequest.save();
@@ -130,15 +152,14 @@ requestRoute.get('/pending',userAuth,adminAuth, async (req, res) => {
   try {
     const requests = await Request.find({ status: 'pending' })
       .sort({ createdAt: -1 })
-      .populate('userId', 'firstName email')
+      .populate('userId','firstName email')
       .populate('groupId', 'groupNo');
-
     const formatted = requests.map(req => ({
       id: req._id,
       type: req.type,
       user: req.userId?.firstName || 'Unknown',
       email: req.userId?.email || '',
-      groupNo: req.groupId?.groupNo || '',
+      groupId: req.groupId|| '',
       amount: req.amount,
       message: generateMessage(req),
       timestamp: req.createdAt,
@@ -147,7 +168,6 @@ requestRoute.get('/pending',userAuth,adminAuth, async (req, res) => {
 
     res.json({ success: true, requests: formatted });
   } catch (err) {
-    console.error(err);
     res.status(500).json({ success: false, message: 'Failed to fetch pending requests' });
   }
 });
@@ -157,15 +177,15 @@ function generateMessage(req) {
   switch (req.type) {
     case 'join_group': return `Request to join a group (₹${req.amount?.toLocaleString() || '—'})`;
     case 'leave_group': return 'Request to leave group';
-    case 'confirm_cash_payment': return `Cash payment confirmation for ${req.monthKey}`;
-    case 'month_prebook': return `Pre-book payout for ${req.monthKey}`;
+    case 'confirm_cash_payment': return `Cash payment confirmation for ${req.monthName}`;
+    case 'month_prebook': return `Pre-book payout for ${req.monthName}`;
     default: return 'Request';
   }
 }
 
 // ✅ 2. POST /request/approve
 requestRoute.post('/approve', userAuth, adminAuth, async (req, res) => {
-  const { requestId, groupId } = req.body;
+  const { requestId, seclectedgroupId, groupId} = req.body;
   if (!requestId) {
     return res.status(400).json({ success: false, message: 'Request ID is required' });
   }
@@ -177,14 +197,34 @@ requestRoute.post('/approve', userAuth, adminAuth, async (req, res) => {
     if (request.status !== 'pending') {
       return res.status(400).json({ success: false, message: 'Request already processed' });
     }
-    // ✅ If request type is join_group, add user to group + generate dues
     
+    if (request.type === 'month_prebook') {
+          const group = await Group.findById(groupId);
+    if (!group) {
+      return res.status(404).json({ success: false, message: 'Group not found' });
+    }
+
+    const member = group.members.find(m => m.userId.toString() === request.userId.toString());
+    if (!member) {
+      return res.status(400).json({ success: false, message: 'User is not a member of this group' });
+    }
+    // ✅ Mark the member’s preBookedMonth
+    member.preBookedMonth = request.monthName;
+    
+    // ✅ Save group and request
+    await group.save();
+    request.status = 'approved';
+    await request.save();
+
+    return res.json({ success: true, message: 'Pre-book request approved' });
+  }
+    // ✅ If request type is join_group, add user to group + generate dues
     if (request.type === 'join_group'){
-      if (!groupId) {
+      if (!seclectedgroupId) {
         return res.status(400).json({ success: false, message: 'Group ID is required to approve join_group request' });
       }
 
-      const group = await Group.findById(groupId);
+      const group = await Group.findById(seclectedgroupId);
       if (!group) {
         return res.status(404).json({ success: false, message: 'Group not found' });
       }

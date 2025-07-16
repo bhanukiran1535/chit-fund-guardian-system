@@ -24,13 +24,13 @@ export const AdminDashboard = ({ user }) => {
     const fetchAdminStats = async () => {
       try {
         // Fetch all groups
-        const groupsRes = await fetch(`${API_BASE}/group/all`, {
+        const groupsRes = await fetch(`${API_BASE}/group/allGroups`, {
           credentials: 'include'
         });
         const groupsData = await groupsRes.json();
         
         // Fetch all pending requests
-        const requestsRes = await fetch(`${API_BASE}/request/all`, {
+        const requestsRes = await fetch(`${API_BASE}/request/pending`, {
           credentials: 'include'
         });
         const requestsData = await requestsRes.json();

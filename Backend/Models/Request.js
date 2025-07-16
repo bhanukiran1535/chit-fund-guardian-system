@@ -10,7 +10,9 @@ const RequestSchema = new mongoose.Schema({
     required: true 
   },
 
-  monthKey: { type: String }, // for payment confirmation requests
+  monthName: {
+    type: String, // e.g., "June 2025"
+  },
   amount: { type: Number }, // requested amount (for payment/join)
 
   status: {
