@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Calendar, Users, Settings, Eye, Plus } from 'lucide-react';
+import { GroupDetailsView } from './GroupDetailsView';
 import './GroupManagement.css';
 
 export const GroupManagement = () => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedGroup, setSelectedGroup] = useState(null);
 
 
   const parseStartMonth = (startMonth) => {
@@ -126,7 +128,10 @@ const fetchGroups = async () => {
                     <td>{getStatusBadge(group.status)}</td>
                     <td>
                       <div className="actions-cell">
-                        <button className="action-btn secondary">
+                        <button 
+                          className="action-btn secondary"
+                          onClick={() => setSelectedGroup(group)}
+                        >
                           <Eye className="btn-icon" />
                           View
                         </button>
@@ -143,6 +148,14 @@ const fetchGroups = async () => {
           </div>
         )}
       </div>
+
+      {/* Group Details Modal */}
+      {selectedGroup && (
+        <GroupDetailsView 
+          group={selectedGroup} 
+          onClose={() => setSelectedGroup(null)} 
+        />
+      )}
     </div>
   );
 };

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Users, DollarSign, Calendar, AlertCircle, Plus, Settings } from 'lucide-react';
 import { AdminRequests } from './AdminRequests';
 import { GroupManagement } from './GroupManagement';
+import { MemberManagement } from './MemberManagement';
 import './AdminDashboard.css';
 import { CreateGroupForm } from './CreateGroupForm';
 import { AddMemberForm } from './AddMemberForm';
@@ -182,21 +183,7 @@ export const AdminDashboard = ({ user }) => {
         <div className="tab-content">
           {activeTab === "requests" && <AdminRequests />}
           {activeTab === "groups" && <GroupManagement />}
-          {activeTab === "members" && (
-            <div className="placeholder-card">
-              <div className="card-header">
-                <h2 className="card-title">Member Management</h2>
-                <p className="card-subtitle">
-                  Manage all members across groups
-                </p>
-              </div>
-              <div className="card-content">
-                <p className="placeholder-text">
-                  Member management interface coming soon...
-                </p>
-              </div>
-            </div>
-          )}
+          {activeTab === "members" && <MemberManagement />}
         </div>
       </div>
     </div>
