@@ -111,12 +111,22 @@ export const GroupMonthManagement = ({ group, onBack }) => {
 
   if (selectedMonth) {
     return (
-      <GroupMonthDetails 
-        group={group}
-        monthData={selectedMonth}
-        onClose={() => setSelectedMonth(null)}
-        adminMode={true}
-      />
+      <div className="month-detail-view">
+        <div className="detail-header">
+          <button className="back-btn" onClick={() => setSelectedMonth(null)}>
+            <ArrowLeft size={20} />
+            Back to Month List
+          </button>
+          <h2>Month Details: {selectedMonth.monthName}</h2>
+        </div>
+        
+        <GroupMonthDetails 
+          group={group}
+          monthData={selectedMonth}
+          onClose={() => setSelectedMonth(null)}
+          adminMode={true}
+        />
+      </div>
     );
   }
 

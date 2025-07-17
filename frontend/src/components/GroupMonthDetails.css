@@ -209,6 +209,53 @@ h1 {
 .badge.rejected { background: #fee2e2; color: #991b1b; }
 .badge.failed { background: #fef2f2; color: #991b1b; font-style: italic; }
 
+/* Prebooked Month Winner Styling */
+.month-item.prebooked-winner {
+  background: linear-gradient(135deg, #ffd700, #ffed4e, #fff8dc);
+  border: 2px solid #ffd700;
+  box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+  transform: scale(1.02);
+  animation: golden-glow 2s ease-in-out infinite alternate;
+}
+
+.timeline-ball.prebooked {
+  background: linear-gradient(135deg, #ffd700, #ffed4e);
+  border: 3px solid #ffa500;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+}
+
+.prebook-winner-badge {
+  background: linear-gradient(135deg, #ff6b35, #f7931e);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-left: 8px;
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+@keyframes golden-glow {
+  0% {
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+  }
+  100% {
+    box-shadow: 0 12px 35px rgba(255, 215, 0, 0.5);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.6);
+  }
+}
+
 .payment-details {
   display: flex;
   flex-direction: column;

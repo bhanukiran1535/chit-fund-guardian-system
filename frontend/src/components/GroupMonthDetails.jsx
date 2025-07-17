@@ -210,9 +210,12 @@ export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false
           const prebookStatus = prebookStatuses[m.monthName];
           const canPay = m.status === 'due' || m.status === 'pending';
 
+          // Check if this month is the user's prebooked and approved month
+          const isMyPrebookedMonth = hasPreBookedMonth === m.monthName && prebookStatus === 'approved';
+
           return (
-            <div key={i} className="month-item">
-              <div className={`timeline-ball ${m.status}`}>
+            <div key={i} className={`month-item ${isMyPrebookedMonth ? 'prebooked-winner' : ''}`}>
+              <div className={`timeline-ball ${m.status} ${isMyPrebookedMonth ? 'prebooked' : ''}`}>
                 {m.status === 'paid' && <CheckCircle size={12} className="status-icon" />}
                 {m.status === 'due' && <AlertCircle size={12} className="status-icon" />}
                 {m.status === 'pending' && <Clock size={12} className="status-icon" />}
@@ -224,6 +227,9 @@ export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false
                   <div className="month-title">
                     <h3>{m.monthName}</h3>
                     <span className={`badge ${m.status}`}>{m.status}</span>
+                    {isMyPrebookedMonth && (
+                      <span className="prebook-winner-badge">🎯 You Win This Month!</span>
+                    )}
                   </div>
 
                   <div className="month-actions">
