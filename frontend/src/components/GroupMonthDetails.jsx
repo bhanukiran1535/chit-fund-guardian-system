@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, CreditCard, Clock, CheckCircle, AlertCircle, TrendingUp } from 'lucide-react';
+import { Calendar, CreditCard, Clock, CheckCircle, AlertCircle, TrendingUp, X } from 'lucide-react';
 import { Progress } from './ui/progress';
 import './GroupMonthDetails.css';
 
-export const GroupMonthDetails = () => {
+export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false, userId }) => {
   const [months, setMonths] = useState([]);
   const [groupInfo, setGroupInfo] = useState(null);
   const [shareAmount, setShareAmount] = useState(0);
@@ -170,7 +170,16 @@ export const GroupMonthDetails = () => {
 
   return (
     <div className="month-details-page">
-      <button className="back-btn" onClick={handleBack}>← Group List</button>
+      <div className="page-header">
+        <button className="back-btn" onClick={onClose || handleBack}>
+          ← {onClose ? 'Back' : 'Group List'}
+        </button>
+        {onClose && (
+          <button className="close-btn" onClick={onClose}>
+            <X size={20} />
+          </button>
+        )}
+      </div>
       <h1>Group {groupInfo.groupNo}: Monthly Breakdown</h1>
       
       {/* Progress Section */}

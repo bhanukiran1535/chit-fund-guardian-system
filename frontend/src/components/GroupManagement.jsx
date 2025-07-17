@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Calendar, Users, Settings, Eye, Plus } from 'lucide-react';
 import { GroupDetailsView } from './GroupDetailsView';
+import { GroupMonthManagement } from './GroupMonthManagement';
 import './GroupManagement.css';
 
 export const GroupManagement = () => {
   const [groups, setGroups] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const [managingGroup, setManagingGroup] = useState(null);
 
 
   const parseStartMonth = (startMonth) => {
@@ -135,7 +137,10 @@ const fetchGroups = async () => {
                           <Eye className="btn-icon" />
                           View
                         </button>
-                        <button className="action-btn secondary">
+                        <button 
+                          className="action-btn secondary"
+                          onClick={() => setManagingGroup(group)}
+                        >
                           <Settings className="btn-icon" />
                           Manage
                         </button>
@@ -154,6 +159,14 @@ const fetchGroups = async () => {
         <GroupDetailsView 
           group={selectedGroup} 
           onClose={() => setSelectedGroup(null)} 
+        />
+      )}
+
+      {/* Group Month Management */}
+      {managingGroup && (
+        <GroupMonthManagement 
+          group={managingGroup} 
+          onBack={() => setManagingGroup(null)} 
         />
       )}
     </div>
