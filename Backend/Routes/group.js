@@ -39,14 +39,14 @@ groupRoute.get('/allGroups', async (req, res) => {
     const { status } = req.query;
     const currentDate = new Date();
 
-    const allGroups = await Group.find().select('-__v -updatedAt -createdAt -foremanCommission');
-
+    const allGroups = await Group.find().select('-__v -updatedAt -createdAt -foremanCommission')
+                                        .populate('members.userId', 'firstName email');
     // Attach status to each group
     const groupsWithStatus = allGroups.map(group => {
       const groupStart = new Date(group.startMonth);
       const groupEnd = new Date(groupStart);
       groupEnd.setMonth(groupEnd.getMonth() + group.tenure);
-
+      
       let computedStatus = '';
       if (groupStart > currentDate) computedStatus = 'upcoming';
       else if (groupStart <= currentDate && groupEnd >= currentDate) computedStatus = 'active';

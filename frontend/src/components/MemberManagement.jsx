@@ -25,7 +25,7 @@ export const MemberManagement = () => {
   const fetchData = async () => {
     try {
       // Fetch all groups
-      const groupsRes = await fetch(`${API_BASE}/group/allGroups`, {
+      const groupsRes = await fetch(`${API_BASE}/group/allGroups`,{
         credentials: 'include'
       });
       const groupsData = await groupsRes.json();
@@ -49,7 +49,6 @@ export const MemberManagement = () => {
             });
           }
         });
-        
         setMembers(allMembers);
       }
     } catch (error) {
@@ -65,8 +64,8 @@ export const MemberManagement = () => {
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter(member =>
-        member.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        member.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.userId.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        member.userId.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         member.groupNo?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
@@ -257,8 +256,8 @@ export const MemberManagement = () => {
                   <tr key={`${member.groupId}-${member._id || index}`}>
                     <td>
                       <div className="member-cell">
-                        <div className="member-name">{member.name || 'Unknown'}</div>
-                        <div className="member-email">{member.email || 'No email'}</div>
+                        <div className="member-name">{member.userId.firstName || 'Unknown'}</div>
+                        <div className="member-email">{member.userId.email || 'No email'}</div>
                       </div>
                     </td>
                     <td>
