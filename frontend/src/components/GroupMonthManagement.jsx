@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, CheckCircle, AlertTriangle, Users, DollarSign, Clock } from 'lucide-react';
-import { GroupMonthDetails } from './GroupMonthDetails';
+import { MonthUserStatus } from './MonthUserStatus';
 import './GroupMonthManagement.css';
 
 export const GroupMonthManagement = ({ group, onBack }) => {
@@ -111,22 +111,12 @@ export const GroupMonthManagement = ({ group, onBack }) => {
 
   if (selectedMonth) {
     return (
-      <div className="month-detail-view">
-        <div className="detail-header">
-          <button className="back-btn" onClick={() => setSelectedMonth(null)}>
-            <ArrowLeft size={20} />
-            Back to Month List
-          </button>
-          <h2>Month Details: {selectedMonth.monthName}</h2>
-        </div>
-        
-        <GroupMonthDetails 
-          group={group}
-          monthData={selectedMonth}
-          onClose={() => setSelectedMonth(null)}
-          adminMode={true}
-        />
-      </div>
+      <MonthUserStatus 
+        group={group}
+        monthData={selectedMonth}
+        onBack={() => setSelectedMonth(null)}
+        adminMode={true}
+      />
     );
   }
 

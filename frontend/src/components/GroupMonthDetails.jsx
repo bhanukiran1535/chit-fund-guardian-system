@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, CreditCard, Clock, CheckCircle, AlertCircle, TrendingUp, X } from 'lucide-react';
-import { Progress } from './ui/progress';
+import { Progress } from '../ui/progress';
 import './GroupMonthDetails.css';
 
 export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false, userId }) => {
@@ -213,23 +213,33 @@ export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false
           // Check if this month is the user's prebooked and approved month
           const isMyPrebookedMonth = hasPreBookedMonth === m.monthName && prebookStatus === 'approved';
 
+          // Calculate payout amount for prebooked winner
+          const payoutAmount = isMyPrebookedMonth ? (shareAmount * 0.97) : null; // 97% after 3% foreman commission
+
           return (
-            <div key={i} className={`month-item ${isMyPrebookedMonth ? 'prebooked-winner' : ''}`}>
+            <div key={i} className={`month-item ${isMyPrebookedMonth ? 'prebooked-winner-month' : ''}`}>
               <div className={`timeline-ball ${m.status} ${isMyPrebookedMonth ? 'prebooked' : ''}`}>
                 {m.status === 'paid' && <CheckCircle size={12} className="status-icon" />}
                 {m.status === 'due' && <AlertCircle size={12} className="status-icon" />}
                 {m.status === 'pending' && <Clock size={12} className="status-icon" />}
                 {m.status === 'upcoming' && <Calendar size={12} className="status-icon" />}
+                {isMyPrebookedMonth && <span className="winner-star">⭐</span>}
               </div>
 
-              <div className="month-info">
+              <div className={`month-info ${isMyPrebookedMonth ? 'prebooked-winner-card' : ''}`}>
+                {isMyPrebookedMonth && (
+                  <div className="winner-banner">
+                    <span className="winner-text">🎯 YOU WIN THIS MONTH! 🎯</span>
+                    <span className="payout-amount">Payout: ₹{payoutAmount?.toLocaleString()}</span>
+                  </div>
+                )}
+                
                 <div className="month-header">
                   <div className="month-title">
                     <h3>{m.monthName}</h3>
-                    <span className={`badge ${m.status}`}>{m.status}</span>
-                    {isMyPrebookedMonth && (
-                      <span className="prebook-winner-badge">🎯 You Win This Month!</span>
-                    )}
+                    <span className={`badge ${m.status} ${isMyPrebookedMonth ? 'winner-badge' : ''}`}>
+                      {isMyPrebookedMonth ? 'WINNER' : m.status}
+                    </span>
                   </div>
 
                   <div className="month-actions">
