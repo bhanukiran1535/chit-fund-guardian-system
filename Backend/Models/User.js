@@ -3,12 +3,13 @@ const validator = require('validator')
 const bcrypt = require('bcrypt')
 const jwt = require("jsonwebtoken")
 const SECRET_KEY = process.env.JWT_SECRET;
+const Counter = require('./Counter'); 
 
 const UserSchema = mongoose.Schema({
  userId:{
   type: Number,
   unique:true,
-  required: true
+  // required: true   // Remove `required: true`
  },
  password:{
   type: String,
@@ -56,5 +57,18 @@ UserSchema.methods.createpasswordHash = async function (newPassword) {   // we c
   const passwordHash =await bcrypt.hash(newPassword,10);
   return passwordHash;
 };
+
+UserSchema.pre('save', async function (next) {
+  if (this.isNew) {
+    const counter = await Counter.findOneAndUpdate(
+      { name: 'userId' },
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    );
+    this.userId = counter.seq;
+  }
+  next();
+});
+
 const UserModel = new mongoose.model('User',UserSchema);
 module.exports = UserModel;

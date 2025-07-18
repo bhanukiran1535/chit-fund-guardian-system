@@ -6,7 +6,8 @@ const GroupSchema = new mongoose.Schema({
   groupNo:{
     type: String,
     unique:true,
-    required: true
+    required: true,
+    
   },
   chitValue: {  // Total amount pooled monthly
     type: Number,

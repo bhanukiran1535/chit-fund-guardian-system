@@ -1,6 +1,7 @@
 // routes/user.js
 const express = require('express');
 const userRoute = express.Router();
+const Otp = require("../Models/OTP");
 const User = require("../Models/User");
 const userAuth = require('../middlewares/userAuth');
 const adminAuth = require('../middlewares/adminAuth');
@@ -18,6 +19,54 @@ userRoute.post('/create', async (req, res) => {
   } catch (err) {
     res.status(400).json({ success: false, message: err.message });
   }
+});
+
+userRoute.post('/verify-otp', async (req, res) => {
+  const { email, otp, password, firstName, lastName, phoneNo } = req.body;
+
+  const otpEntry = await Otp.findOne({ email });
+
+  if (!otpEntry) {
+    return res.status(400).json({ message: 'OTP not found' });
+  }
+
+  if (otpEntry.otp !== otp) {
+    return res.status(400).json({ message: 'Invalid OTP' });
+  }
+
+  if (otpEntry.expiry < Date.now()) {
+    await Otp.deleteOne({ email });
+    return res.status(400).json({ message: 'OTP expired' });
+  }
+  await Otp.deleteOne({ email }); // Clean up
+  res.status(201).json({ success: true, message: 'User created successfully' });
+});
+
+
+
+
+// send OTP route
+userRoute.post('/send-otp', async (req, res) => {
+  const { email } = req.body;
+  
+  // Check if user already exists
+  const existingUser = await User.findOne({ email });
+  if (existingUser) {
+    return res.status(400).json({ message: 'User already exists' });
+  }
+  
+  // Generate a 6-digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  
+  const expiry = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+  
+  await Otp.deleteMany({ email }); // delete any existing OTPs for this email
+  await Otp.create({ email, otp, expiry });
+  
+  // Send OTP (console.log for now, or integrate email/SMS)
+  console.log(`OTP for ${email}: ${otp}`);
+  
+  res.json({ success: true, message: 'OTP sent to email' });
 });
 
 userRoute.get('/me', userAuth, async (req, res) => {
@@ -39,7 +88,6 @@ userRoute.get('/me', userAuth, async (req, res) => {
     res.status(401).json({ success: false, message: "Unauthorized" });
   }
 });
-
 
 userRoute.post('/login', async (req, res) => {
   try {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, CreditCard, Clock, CheckCircle, AlertCircle, TrendingUp, X } from 'lucide-react';
-import { Progress } from '@/components/ui/progress';
+import { Progress } from './ui/progress';
 import './GroupMonthDetails.css';
 
 export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false, userId }) => {
@@ -211,11 +211,7 @@ export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false
           const canPay = m.status === 'due' || m.status === 'pending';
 
           // Check if this month is the user's prebooked and approved month
-          const isMyPrebookedMonth = (hasPreBookedMonth === m.monthName && prebookStatus === 'approved') || 
-                                   (m.prebookedBy && m.status === 'paid') || 
-                                   (m.monthName === hasPreBookedMonth && m.status === 'paid') ||
-                                   // TEMP: Force show on first paid month for demo
-                                   (i === 0 && m.status === 'paid');
+          const isMyPrebookedMonth = hasPreBookedMonth === m.monthName && prebookStatus === 'approved';
 
           // Calculate payout amount for prebooked winner
           const payoutAmount = isMyPrebookedMonth ? (shareAmount * 0.97) : null; // 97% after 3% foreman commission
