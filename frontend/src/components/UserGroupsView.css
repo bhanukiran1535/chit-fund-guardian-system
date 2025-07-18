@@ -17,9 +17,9 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(102, 126, 234, 0.1);
-  border: 1px solid rgba(102, 126, 234, 0.2);
-  color: #667eea;
+  background: rgba(170, 182, 229, 0.483);
+  border: 1px solid rgba(200, 205, 226, 0.646);
+  color: #e0e2eb;
   padding: 8px 16px;
   border-radius: 8px;
   cursor: pointer;
@@ -28,7 +28,7 @@
 }
 
 .back-btn:hover {
-  background: rgba(102, 126, 234, 0.2);
+  background: rgba(156, 173, 246, 0.594);
   transform: translateX(-2px);
 }
 
@@ -111,7 +111,7 @@
 
 .groups-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(1fr));
   gap: 20px;
 }
 

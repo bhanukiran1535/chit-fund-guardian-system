@@ -41,8 +41,7 @@
   margin: 0;
 }
 
-.back-btn,
-.close-btn {
+.back-btn{
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -50,9 +49,13 @@
   background: transparent;
   border: 1px solid #d1d5db;
   border-radius: 0.375rem;
-  color: #374151;
+  color: #ffffff;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+.group-details-overlay .close-btn{
+   background-color: #f9fafb;
 }
 
 .back-btn:hover,

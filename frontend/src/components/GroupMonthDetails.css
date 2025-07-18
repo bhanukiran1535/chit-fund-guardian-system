@@ -355,7 +355,7 @@ h1 {
 }
 
 .payment-summary {
-  background: #f9fafb;
+  background: #7482ef;
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 1.5rem;
@@ -380,6 +380,7 @@ h1 {
 .modal-actions {
   display: flex;
   gap: 1rem;
+  padding: 1rem;
   justify-content: flex-end;
 }
 

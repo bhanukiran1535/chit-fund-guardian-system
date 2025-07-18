@@ -41,7 +41,7 @@ requestRoute.get('/my', userAuth, async (req, res) => {
   try {
     const userId = req.user._id;
 
-    const requests = await Request.find({ userId }).sort({ createdAt: -1 });
+    const requests = (await Request.find({ userId }).sort({ createdAt: -1 }).populate('groupId', 'groupNo'));
     res.json({ success: true, requests });
   } catch (err) {
     console.error('Error fetching user requests:', err);
@@ -239,6 +239,7 @@ requestRoute.post('/approve', userAuth, adminAuth, async (req, res) => {
     }
     
     // ✅ Approve the request
+    request.groupId = seclectedgroupId;
     request.status = 'approved';
     await request.save();
 
