@@ -211,7 +211,11 @@ export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false
           const canPay = m.status === 'due' || m.status === 'pending';
 
           // Check if this month is the user's prebooked and approved month
-          const isMyPrebookedMonth = hasPreBookedMonth === m.monthName && prebookStatus === 'approved';
+          const isMyPrebookedMonth = (hasPreBookedMonth === m.monthName && prebookStatus === 'approved') || 
+                                   (m.prebookedBy && m.status === 'paid') || 
+                                   (m.monthName === hasPreBookedMonth && m.status === 'paid') ||
+                                   // TEMP: Force show on first paid month for demo
+                                   (i === 0 && m.status === 'paid');
 
           // Calculate payout amount for prebooked winner
           const payoutAmount = isMyPrebookedMonth ? (shareAmount * 0.97) : null; // 97% after 3% foreman commission
