@@ -165,3 +165,62 @@
     padding: 3rem 2rem;
   }
 }
+
+.email-verification-container {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.email-verification-container .form-input {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.form-input.verified {
+  border-color: #16a34a;
+  background-color: #f0fdf4;
+}
+
+.verify-button, .verify-otp-button {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.verify-button:hover, .verify-otp-button:hover {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  transform: translateY(-1px);
+}
+
+.verify-button:disabled, .verify-otp-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.verified-badge {
+  color: #16a34a;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.otp-container {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  align-items: center;
+}
+
+.otp-container .form-input {
+  flex: 1;
+  margin-bottom: 0;
+}

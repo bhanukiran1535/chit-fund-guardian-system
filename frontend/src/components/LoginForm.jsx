@@ -13,6 +13,76 @@ export const LoginForm = ({ onLogin }) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isEmailVerified, setIsEmailVerified] = useState(false);
+  const [showOtpInput, setShowOtpInput] = useState(false);
+  const [otp, setOtp] = useState('');
+  const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+
+  const handleSendOtp = async () => {
+    if (!email) {
+      setError('Please enter your email first');
+      return;
+    }
+    
+    setIsVerifyingEmail(true);
+    setError('');
+    
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/send-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+        credentials: 'include'
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to send OTP');
+      }
+      
+      setShowOtpInput(true);
+      setSuccess('OTP sent to your email. Check your inbox.');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsVerifyingEmail(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!otp) {
+      setError('Please enter the OTP');
+      return;
+    }
+    
+    setIsVerifyingOtp(true);
+    setError('');
+    
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, otp }),
+        credentials: 'include'
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.message || 'Invalid OTP');
+      }
+      
+      setIsEmailVerified(true);
+      setShowOtpInput(false);
+      setSuccess('Email verified successfully!');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setIsVerifyingOtp(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,6 +92,11 @@ export const LoginForm = ({ onLogin }) => {
 
     if (isSignUp) {
       // Validation for signup
+      if (!isEmailVerified) {
+        setError('Please verify your email first');
+        setIsLoading(false);
+        return;
+      }
       if (password !== confirmPassword) {
         setError('Passwords do not match');
         setIsLoading(false);
@@ -108,6 +183,9 @@ export const LoginForm = ({ onLogin }) => {
               setIsSignUp(false);
               setError('');
               setSuccess('');
+              setIsEmailVerified(false);
+              setShowOtpInput(false);
+              setOtp('');
             }}
           >
             Sign In
@@ -119,6 +197,9 @@ export const LoginForm = ({ onLogin }) => {
               setIsSignUp(true);
               setError('');
               setSuccess('');
+              setIsEmailVerified(false);
+              setShowOtpInput(false);
+              setOtp('');
             }}
           >
             Create Account
@@ -170,15 +251,58 @@ export const LoginForm = ({ onLogin }) => {
 
           <div className="form-group">
             <label htmlFor="email" className="form-label">Email</label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="form-input"
-              required
-            />
+            <div className="email-verification-container">
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (isEmailVerified) {
+                    setIsEmailVerified(false);
+                    setShowOtpInput(false);
+                  }
+                }}
+                placeholder="Enter your email"
+                className={`form-input ${isEmailVerified ? 'verified' : ''}`}
+                required
+                disabled={isEmailVerified && isSignUp}
+              />
+              {isSignUp && !isEmailVerified && (
+                <button
+                  type="button"
+                  onClick={handleSendOtp}
+                  disabled={isVerifyingEmail || !email}
+                  className="verify-button"
+                >
+                  {isVerifyingEmail ? 'Sending...' : 'Verify'}
+                </button>
+              )}
+              {isSignUp && isEmailVerified && (
+                <span className="verified-badge">✓ Verified</span>
+              )}
+            </div>
+            
+            {isSignUp && showOtpInput && (
+              <div className="otp-container">
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="Enter 6-digit OTP"
+                  className="form-input otp-input"
+                  maxLength="6"
+                />
+                <button
+                  type="button"
+                  onClick={handleVerifyOtp}
+                  disabled={isVerifyingOtp || !otp}
+                  className="verify-otp-button"
+                >
+                  {isVerifyingOtp ? 'Verifying...' : 'Verify OTP'}
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="form-group">

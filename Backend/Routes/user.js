@@ -5,6 +5,7 @@ const Otp = require("../Models/OTP");
 const User = require("../Models/User");
 const userAuth = require('../middlewares/userAuth');
 const adminAuth = require('../middlewares/adminAuth');
+const sendOTP = require('../Utils/OTPsender');
 
 
 userRoute.post('/create', async (req, res) => {
@@ -22,7 +23,7 @@ userRoute.post('/create', async (req, res) => {
 });
 
 userRoute.post('/verify-otp', async (req, res) => {
-  const { email, otp, password, firstName, lastName, phoneNo } = req.body;
+  const { email, otp } = req.body;
 
   const otpEntry = await Otp.findOne({ email });
 
@@ -38,8 +39,9 @@ userRoute.post('/verify-otp', async (req, res) => {
     await Otp.deleteOne({ email });
     return res.status(400).json({ message: 'OTP expired' });
   }
+  
   await Otp.deleteOne({ email }); // Clean up
-  res.status(201).json({ success: true, message: 'User created successfully' });
+  res.status(200).json({ success: true, message: 'Email verified successfully' });
 });
 
 
@@ -63,8 +65,14 @@ userRoute.post('/send-otp', async (req, res) => {
   await Otp.deleteMany({ email }); // delete any existing OTPs for this email
   await Otp.create({ email, otp, expiry });
   
-  // Send OTP (console.log for now, or integrate email/SMS)
-  console.log(`OTP for ${email}: ${otp}`);
+  try {
+    // Send OTP via email
+    await sendOTP(email, otp);
+    console.log(`OTP sent to ${email}: ${otp}`); // Keep console log for development
+  } catch (emailError) {
+    console.log(`Email sending failed, but OTP stored: ${otp} for ${email}`);
+    // Continue even if email fails - OTP is still stored
+  }
   
   res.json({ success: true, message: 'OTP sent to email' });
 });
