@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, CreditCard, Clock, CheckCircle, AlertCircle, TrendingUp, X } from 'lucide-react';
-import { Progress } from '../ui/progress';
+import { Progress } from '@/components/ui/progress';
 import './GroupMonthDetails.css';
 
 export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false, userId }) => {
