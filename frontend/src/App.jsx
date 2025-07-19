@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { GroupMonthDetails } from "./components/GroupMonthDetails";
+import { GroupMonthManagement } from "./components/GroupMonthManagement";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,7 +26,8 @@ const App = () => {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
-            <Route path="/group/:groupId/details" element={<GroupMonthDetails />} />
+            <Route path="/user/group/:groupId/details" element={<GroupMonthDetails />} />
+            <Route path="/admin/group/:groupId/details" element={<GroupMonthManagement />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -16,3 +16,5 @@ async function sendOTP(email, otp) {
     text: `Your OTP for login is: ${otp}`,
   });
 }
+
+module.exports = { sendOTP };

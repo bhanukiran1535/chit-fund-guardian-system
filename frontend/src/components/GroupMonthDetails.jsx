@@ -61,11 +61,11 @@ export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false
         if (data.success) {
           const statuses = {};
           data.requests
-            .filter(r => r.type === 'month_prebook' && r.groupId === groupId)
-            .forEach(r => {
-              statuses[r.monthKey] = r.status;
+          .filter(r => r.type === 'month_prebook' && r.groupId._id === groupId)
+          .forEach(r => {
+              statuses[r.monthName] = r.status;
               if (r.status === 'approved') {
-                setHasPreBookedMonth(r.monthKey); // set prebooked month from request if approved
+                setHasPreBookedMonth(r.monthName); // set prebooked month from request if approved
               }
             });
           setPrebookStatuses(statuses);
@@ -205,19 +205,19 @@ export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false
         {months.map((m, i) => {
           const amount = calculateAmount(m.monthName, split, hasPreBookedMonth);
 
-          const canPrebook = m.status === 'upcoming' && !m.prebookedBy && !hasPreBookedMonth;
+          const canPrebook = m.status === 'upcoming' && !hasPreBookedMonth;
 
           const prebookStatus = prebookStatuses[m.monthName];
           const canPay = m.status === 'due' || m.status === 'pending';
 
           // Check if this month is the user's prebooked and approved month
-          const isMyPrebookedMonth = hasPreBookedMonth === m.monthName && prebookStatus === 'approved';
+          const isMyPrebookedMonth = hasPreBookedMonth === m.monthName;
 
           // Calculate payout amount for prebooked winner
           const payoutAmount = isMyPrebookedMonth ? (shareAmount * 0.97) : null; // 97% after 3% foreman commission
 
           return (
-            <div key={i} className={`month-item ${isMyPrebookedMonth ? 'prebooked-winner-month' : ''}`}>
+            <div key={i} className={`month-item ${isMyPrebookedMonth ? 'prebooked-winner-month' :'' }`}>
               <div className={`timeline-ball ${m.status} ${isMyPrebookedMonth ? 'prebooked' : ''}`}>
                 {m.status === 'paid' && <CheckCircle size={12} className="status-icon" />}
                 {m.status === 'due' && <AlertCircle size={12} className="status-icon" />}
@@ -227,12 +227,6 @@ export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false
               </div>
 
               <div className={`month-info ${isMyPrebookedMonth ? 'prebooked-winner-card' : ''}`}>
-                {isMyPrebookedMonth && (
-                  <div className="winner-banner">
-                    <span className="winner-text">🎯 YOU WIN THIS MONTH! 🎯</span>
-                    <span className="payout-amount">Payout: ₹{payoutAmount?.toLocaleString()}</span>
-                  </div>
-                )}
                 
                 <div className="month-header">
                   <div className="month-title">
@@ -241,7 +235,12 @@ export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false
                       {isMyPrebookedMonth ? 'WINNER' : m.status}
                     </span>
                   </div>
-
+                  {isMyPrebookedMonth && (
+                  <div className="winner-banner">
+                    <span className="winner-text">YOU WIN THIS MONTH!</span>
+                    <span className="payout-amount">Payout: ₹{payoutAmount?.toLocaleString()}</span>
+                  </div>
+                  )}
                   <div className="month-actions">
                     {canPrebook && (
                       prebookStatus ? (

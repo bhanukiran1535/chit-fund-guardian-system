@@ -4,6 +4,7 @@ const Month = require('../Models/MonthDetails');
 const userAuth = require('../middlewares/userAuth');
 
 // POST /month/my
+
 monthRoute.post('/my', userAuth, async (req, res) => {
   const { groupIds } = req.body;
   const userId = req.user._id;
@@ -24,5 +25,23 @@ monthRoute.post('/my', userAuth, async (req, res) => {
     res.status(500).json({ success: false, message: 'Failed to fetch month records' });
   }
 });
+
+// GET /month/group/:groupId/:monthName
+monthRoute.get('/group/:groupId/:monthName', async (req, res) => {
+  const { groupId, monthName } = req.params;
+
+  try {
+    const monthDetails = await Month.find({
+      groupId,
+      monthName
+    }).populate('userId', 'name email'); // optional user info
+
+    res.json({ success: true, monthDetails });
+  } catch (error) {
+    console.error('Error fetching month payment details:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch month data' });
+  }
+});
+
 
 module.exports = monthRoute;

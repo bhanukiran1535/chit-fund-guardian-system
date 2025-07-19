@@ -5,8 +5,8 @@ const Otp = require("../Models/OTP");
 const User = require("../Models/User");
 const userAuth = require('../middlewares/userAuth');
 const adminAuth = require('../middlewares/adminAuth');
-const sendOTP = require('../Utils/OTPsender');
-
+const {sendOTP} = require('../Utils/OTPsender');
+const { welcomeMail } = require('../Utils/WelcomeMail');
 
 userRoute.post('/create', async (req, res) => {
   try {
@@ -15,6 +15,7 @@ userRoute.post('/create', async (req, res) => {
     const passwordHash = await newUser.createpasswordHash(password);
     newUser.password = passwordHash; // Assign hashed password
     await newUser.save();  // insertOne is in MongoDB native
+    welcomeMail(req.body.email,req.body.firstName);
   // const newUser = await User.create(req.body);  
     res.status(201).json({ success: true, user: newUser });
   } catch (err) {
@@ -70,7 +71,8 @@ userRoute.post('/send-otp', async (req, res) => {
     await sendOTP(email, otp);
     console.log(`OTP sent to ${email}: ${otp}`); // Keep console log for development
   } catch (emailError) {
-    console.log(`Email sending failed, but OTP stored: ${otp} for ${email}`);
+  console.error("Error sending email:", emailError.message);
+  console.log(`Email sending failed, but OTP stored: ${otp} for ${email}`);
     // Continue even if email fails - OTP is still stored
   }
   
