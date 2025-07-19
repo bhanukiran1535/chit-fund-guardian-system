@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Users, Search, Filter, MoreHorizontal, UserCheck, UserX, DollarSign, Calendar, Download } from 'lucide-react';
-import { UserGroupsView } from './UserGroupsView';
 import './MemberManagement.css';
 
 export const MemberManagement = () => {
+  const navigate = useNavigate();
   const [uniqueUsers, setUniqueUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [groups, setGroups] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -188,15 +188,6 @@ export const MemberManagement = () => {
     return <span className={statusClass}>{statusText}</span>;
   };
 
-  if (selectedUser) {
-    return (
-      <UserGroupsView 
-        user={selectedUser} 
-        onBack={() => setSelectedUser(null)} 
-      />
-    );
-  }
-
   return (
     <div className="member-management">
       <div className="management-header">
@@ -284,7 +275,7 @@ export const MemberManagement = () => {
                       <div className="actions-cell">
                         <button 
                           className="view-groups-btn"
-                          onClick={() => setSelectedUser(user)}
+                          onClick={() => navigate(`/admin/user/${user.userId._id}/groups`)}
                         >
                           <UserCheck className="btn-icon" />
                           View Groups

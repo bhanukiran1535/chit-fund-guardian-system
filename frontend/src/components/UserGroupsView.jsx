@@ -1,10 +1,14 @@
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Eye, Calendar, Users, DollarSign, TrendingUp } from 'lucide-react';
 import { GroupCard } from './GroupCard';
 import { GroupMonthDetails } from './GroupMonthDetails';
 import './UserGroupsView.css';
 
-export const UserGroupsView = ({ user, onBack }) => {
+export const UserGroupsView = () => {
+  const { userId } = useParams();
+  const navigate = useNavigate();
+  const [user, setUser] = useState(null);
   const [userGroups, setUserGroups] = useState([]);
   const [selectedGroup, setSelectedGroup] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -12,10 +16,31 @@ export const UserGroupsView = ({ user, onBack }) => {
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
-    fetchUserGroups();
-  }, [user]);
+    if (userId) {
+      fetchUserData();
+    }
+  }, [userId]);
 
-  const fetchUserGroups = async () => {
+  const fetchUserData = async () => {
+    try {
+      // Fetch user details
+      const userRes = await fetch(`${API_BASE}/user/${userId}`, {
+        credentials: 'include'
+      });
+      const userData = await userRes.json();
+
+      if (userData.success) {
+        setUser(userData.user);
+        await fetchUserGroups(userData.user);
+      }
+    } catch (error) {
+      console.error('Failed to fetch user:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUserGroups = async (userData) => {
     try {
       const response = await fetch(`${API_BASE}/group/allGroups`, {
         credentials: 'include'
@@ -25,12 +50,12 @@ export const UserGroupsView = ({ user, onBack }) => {
       if (data.success) {
         // Filter groups that contain this user
         const filteredGroups = data.groups.filter(group => 
-          group.members.some(member => member.userId._id === user.userId._id)
+          group.members.some(member => member.userId._id === userData._id)
         );
 
         // Add user-specific data to each group
         const enrichedGroups = filteredGroups.map(group => {
-          const userMember = group.members.find(member => member.userId._id === user.userId._id);
+          const userMember = group.members.find(member => member.userId._id === userData._id);
           return {
             ...group,
             userRole: userMember?.role || 'member',
@@ -44,10 +69,24 @@ export const UserGroupsView = ({ user, onBack }) => {
       }
     } catch (error) {
       console.error('Failed to fetch user groups:', error);
-    } finally {
-      setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="user-groups-view">
+        <div className="loading">Loading user data...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="user-groups-view">
+        <div className="loading">User not found</div>
+      </div>
+    );
+  }
 
   const calculateUserStats = () => {
     const totalInvestment = userGroups.reduce((sum, group) => sum + (group.userShareAmount || 0), 0);
@@ -63,7 +102,7 @@ export const UserGroupsView = ({ user, onBack }) => {
         group={selectedGroup} 
         onClose={() => setSelectedGroup(null)}
         adminMode={true}
-        userId={user.userId._id}
+        userId={user._id}
       />
     );
   }
@@ -73,18 +112,18 @@ export const UserGroupsView = ({ user, onBack }) => {
   return (
     <div className="user-groups-view">
       <div className="view-header">
-        <button className="back-btn" onClick={onBack}>
+        <button className="back-btn" onClick={() => navigate('/admin')}>
           <ArrowLeft size={20} />
-          Back to Members
+          Back to Admin Dashboard
         </button>
         
         <div className="user-info-header">
           <div className="user-avatar">
-            {user.userId.firstName?.charAt(0).toUpperCase()}
+            {user.firstName?.charAt(0).toUpperCase()}
           </div>
           <div className="user-details">
-            <h2>{user.userId.firstName} {user.userId.lastName}</h2>
-            <p>{user.userId.email}</p>
+            <h2>{user.firstName} {user.lastName}</h2>
+            <p>{user.email}</p>
             <div className="user-stats">
               <div className="stat-item">
                 <span className="stat-value">{userGroups.length}</span>

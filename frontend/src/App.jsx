@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import { GroupMonthDetails } from "./components/GroupMonthDetails";
 import { GroupMonthManagement } from "./components/GroupMonthManagement";
+import { UserGroupsView } from "./components/UserGroupsView";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -27,7 +28,8 @@ const App = () => {
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/user/group/:groupId/details" element={<GroupMonthDetails />} />
-            <Route path="/admin/group/:groupId/details" element={<GroupMonthManagement />} />
+            <Route path="/admin/group/:groupId/manage" element={<GroupMonthManagement />} />
+            <Route path="/admin/user/:userId/groups" element={<UserGroupsView />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

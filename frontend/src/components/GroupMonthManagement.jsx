@@ -1,9 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, CheckCircle, AlertTriangle, Users, DollarSign, Clock } from 'lucide-react';
 import { MonthUserStatus } from './MonthUserStatus';
 import './GroupMonthManagement.css';
 
-export const GroupMonthManagement = ({ group, onBack }) => {
+export const GroupMonthManagement = () => {
+  const { groupId } = useParams();
+  const navigate = useNavigate();
+  const [group, setGroup] = useState(null);
   const [months, setMonths] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -11,17 +15,38 @@ export const GroupMonthManagement = ({ group, onBack }) => {
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
-    fetchGroupMonths();
-  }, [group]);
+    if (groupId) {
+      fetchGroupData();
+    }
+  }, [groupId]);
 
-  const fetchGroupMonths = async () => {
+  const fetchGroupData = async () => {
+    try {
+      // Fetch group details
+      const groupRes = await fetch(`${API_BASE}/group/${groupId}`, {
+        credentials: 'include'
+      });
+      const groupData = await groupRes.json();
+
+      if (groupData.success) {
+        setGroup(groupData.group);
+        await fetchGroupMonths(groupData.group);
+      }
+    } catch (error) {
+      console.error('Failed to fetch group:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchGroupMonths = async (groupData) => {
     try {
       // Generate all months from start to current
-      const startDate = new Date(group.startMonth);
+      const startDate = new Date(groupData.startMonth);
       const currentDate = new Date();
       const generatedMonths = [];
 
-      for (let i = 0; i < group.tenure; i++) {
+      for (let i = 0; i < groupData.tenure; i++) {
         const monthDate = new Date(startDate);
         monthDate.setMonth(monthDate.getMonth() + i);
         
@@ -46,7 +71,7 @@ export const GroupMonthManagement = ({ group, onBack }) => {
       // Fetch actual payment data for each month
       for (const month of generatedMonths) {
         try {
-          const response = await fetch(`${API_BASE}/month/group/${group._id}/${month.monthName}`, {
+          const response = await fetch(`${API_BASE}/month/group/${groupData._id}/${month.monthName}`, {
             credentials: 'include'
           });
           const data = await response.json();
@@ -55,7 +80,7 @@ export const GroupMonthManagement = ({ group, onBack }) => {
             month.membersData = data.monthDetails || [];
             // Update status based on actual payments
             const paidMembers = month.membersData.filter(m => m.status === 'paid').length;
-            const totalMembers = group.members.length;
+            const totalMembers = groupData.members.length;
             
             if (paidMembers === totalMembers) {
               month.status = 'cleared';
@@ -73,10 +98,24 @@ export const GroupMonthManagement = ({ group, onBack }) => {
       setMonths(generatedMonths);
     } catch (error) {
       console.error('Failed to fetch group months:', error);
-    } finally {
-      setLoading(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="group-month-management">
+        <div className="loading">Loading group data...</div>
+      </div>
+    );
+  }
+
+  if (!group) {
+    return (
+      <div className="group-month-management">
+        <div className="loading">Group not found</div>
+      </div>
+    );
+  }
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -120,13 +159,13 @@ export const GroupMonthManagement = ({ group, onBack }) => {
     );
   }
 
-  return (
-    <div className="group-month-management">
-      <div className="management-header">
-        <button className="back-btn" onClick={onBack}>
-          <ArrowLeft size={20} />
-          Back to Groups
-        </button>
+    return (
+      <div className="group-month-management">
+        <div className="management-header">
+          <button className="back-btn" onClick={() => navigate('/admin')}>
+            <ArrowLeft size={20} />
+            Back to Admin Dashboard
+          </button>
         
         <div className="group-info">
           <h2>Group {group.groupNo} - Monthly Management</h2>
