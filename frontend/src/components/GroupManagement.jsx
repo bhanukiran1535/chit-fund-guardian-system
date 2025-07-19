@@ -104,11 +104,13 @@ const fetchGroups = async () => {
                         <div className="progress-bar">
                           <div 
                             className="progress-fill"   
-                            style={{ width: `${(group?.months?.length / group.tenure) * 100}%` }}
+                            style={{ 
+                              width: `${group.currentMonth && group.tenure ? Math.min((group.currentMonth / group.tenure) * 100, 100) : 0}%` 
+                            }}
                           ></div>
                         </div>
                         <span className="progress-text">
-                          {group?.months?.length}/{group.tenure}
+                          {group.currentMonth || 0}/{group.tenure}
                         </span>
                       </div>
                     </td>
