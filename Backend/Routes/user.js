@@ -206,6 +206,108 @@ userRoute.get('/search', userAuth, adminAuth, async (req, res) => {
   }
 });
 
+// Forgot password route
+userRoute.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+  
+  try {
+    // Check if user exists
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Generate a 6-digit OTP for password reset
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiry = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    
+    // Delete any existing OTPs for this email and create new one
+    await Otp.deleteMany({ email });
+    await Otp.create({ email, otp, expiry });
+    
+    try {
+      // Send OTP via email
+      await sendOTP(email, otp);
+      console.log(`Password reset OTP sent to ${email}: ${otp}`);
+    } catch (emailError) {
+      console.error("Error sending email:", emailError.message);
+      console.log(`Email sending failed, but OTP stored: ${otp} for ${email}`);
+    }
+    
+    res.json({ success: true, message: 'Password reset OTP sent to email' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Reset password route
+userRoute.post('/reset-password', async (req, res) => {
+  const { email, otp, newPassword } = req.body;
+  
+  try {
+    // Verify OTP
+    const otpEntry = await Otp.findOne({ email });
+    
+    if (!otpEntry) {
+      return res.status(400).json({ message: 'OTP not found' });
+    }
+    
+    if (otpEntry.otp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+    
+    if (otpEntry.expiry < Date.now()) {
+      await Otp.deleteOne({ email });
+      return res.status(400).json({ message: 'OTP expired' });
+    }
+    
+    // Find user and update password
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const passwordHash = await user.createpasswordHash(newPassword);
+    user.password = passwordHash;
+    await user.save();
+    
+    // Clean up OTP
+    await Otp.deleteOne({ email });
+    
+    res.json({ success: true, message: 'Password reset successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// Change password route (for logged-in users)
+userRoute.post('/change-password', userAuth, async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  
+  try {
+    const user = await User.findById(req.user._id);
+    
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Verify current password
+    const isCurrentPasswordValid = await user.compareHash(currentPassword);
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+    
+    // Hash and update new password
+    const passwordHash = await user.createpasswordHash(newPassword);
+    user.password = passwordHash;
+    await user.save();
+    
+    res.json({ success: true, message: 'Password changed successfully' });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
 userRoute.get('/:userId', async (req, res) => {
   const { userId } = req.params;
   try {

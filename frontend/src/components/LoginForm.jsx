@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Shield } from 'lucide-react';
 import './LoginForm.css';
+import { ForgotPasswordModal } from './ForgotPasswordModal';
 
 export const LoginForm = ({ onLogin }) => {
   const [email, setEmail] = useState('');
@@ -18,6 +19,7 @@ export const LoginForm = ({ onLogin }) => {
   const [otp, setOtp] = useState('');
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   const handleSendOtp = async () => {
     if (!email) {
@@ -346,7 +348,24 @@ export const LoginForm = ({ onLogin }) => {
               : (isSignUp ? 'Create Account' : 'Sign In')
             }
           </button>
+
+          {!isSignUp && (
+            <div className="forgot-password-link">
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="link-button"
+              >
+                Forgot your password?
+              </button>
+            </div>
+          )}
         </form>
+
+        <ForgotPasswordModal 
+          isOpen={showForgotPassword} 
+          onClose={() => setShowForgotPassword(false)} 
+        />
       </div>
     </div>
   );

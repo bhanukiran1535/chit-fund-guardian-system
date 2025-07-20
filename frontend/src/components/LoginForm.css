@@ -109,6 +109,25 @@
   cursor: not-allowed;
 }
 
+.forgot-password-link {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: hsl(var(--primary));
+  cursor: pointer;
+  font-size: 0.875rem;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.link-button:hover {
+  color: hsl(var(--primary) / 0.8);
+}
+
 .login-error {
   color: #dc2626;
   font-size: 0.875rem;
