@@ -46,6 +46,20 @@ const fetchGroups = async () => {
     fetchGroups();
   }, []);
 
+function calculateCurrentMonth(startDateISO) {
+  const startDate = new Date(startDateISO);
+  if (isNaN(startDate)) return 0;
+
+  const now = new Date();
+
+  const monthsPassed =
+    (now.getFullYear() - startDate.getFullYear()) * 12 +
+    (now.getMonth() - startDate.getMonth()) + 1;
+
+  return monthsPassed > 0 ? monthsPassed : 0;
+}
+
+
   const getStatusBadge = (status) =>{
     const statusClass = `status-badge status-${status}`;
     const statusText = status.charAt(0).toUpperCase() + status.slice(1);
@@ -100,19 +114,20 @@ const fetchGroups = async () => {
                       ₹{group.chitValue.toLocaleString()}
                     </td>
                     <td>
-                      <div className="progress-cell">
-                        <div className="progress-bar">
-                          <div 
-                            className="progress-fill"   
-                            style={{ 
-                              width: `${group.currentMonth && group.tenure ? Math.min((group.currentMonth / group.tenure) * 100, 100) : 0}%` 
-                            }}
-                          ></div>
-                        </div>
-                        <span className="progress-text">
-                          {group.currentMonth || 0}/{group.tenure}
-                        </span>
-                      </div>
+                    <div className="progress-cell">
+  <div className="progress-bar">
+    <div 
+      className="progress-fill"   
+      style={{ 
+        width: `${group.startMonth && group.tenure ? Math.min(((calculateCurrentMonth(group.startMonth)) / group.tenure) * 100, 100) : 0}%` 
+      }}
+    ></div>
+  </div>
+  <span className="progress-text">
+    {group.startMonth ? calculateCurrentMonth(group.startMonth) : 0}/{group.tenure}
+  </span>
+</div>
+
                     </td>
                     <td>
                       <div className="members-cell">

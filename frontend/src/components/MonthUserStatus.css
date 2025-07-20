@@ -55,10 +55,7 @@
 }
 
 .stat-icon {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.2);
-  padding: 0.5rem;
-  border-radius: 50%;
+  padding: 0.2rem;
 }
 
 .stat-content {
@@ -201,12 +198,6 @@
   align-items: center;
 }
 
-.status-icon {
-  padding: 0.25rem;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-}
-
 .status-icon.paid {
   color: #16a34a;
   background: #dcfce7;
@@ -214,7 +205,6 @@
 
 .status-icon.due {
   color: #dc2626;
-  background: #fee2e2;
 }
 
 .status-icon.pending {

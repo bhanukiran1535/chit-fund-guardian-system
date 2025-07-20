@@ -39,6 +39,9 @@ h1 {
   margin-bottom: 2rem;
   backdrop-filter: blur(10px);
 }
+.progress-section span{
+  margin: 0.5rem;
+}
 
 .progress-header {
   display: flex;
@@ -68,7 +71,6 @@ h1 {
 }
 
 .progress-bar {
-  margin-bottom: 1rem;
   height: 8px;
   background-color: rgba(255, 255, 255, 0.2);
   border-radius: 9999px;
@@ -139,13 +141,12 @@ h1 {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 1rem;
   flex-wrap: wrap;
 }
 
 .month-title {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 0.25rem;
 }
 

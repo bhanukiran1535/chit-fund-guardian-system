@@ -16,6 +16,19 @@ export const UserGroupsView = () => {
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
+    if (selectedGroup && user) {
+      console.log(user,user._id);
+      navigate(`/user/group/${selectedGroup._id}/details`, {
+        state: {
+          group: selectedGroup,
+          adminMode: true,
+          userId: user._id,
+        }
+      });
+    }
+  }, [selectedGroup, user, navigate]);
+
+  useEffect(() => {
     if (userId) {
       fetchUserData();
     }
@@ -96,23 +109,14 @@ export const UserGroupsView = () => {
     return { totalInvestment, activeGroups, completedGroups };
   };
 
-  if (selectedGroup) {
-    return (
-      <GroupMonthDetails 
-        group={selectedGroup} 
-        onClose={() => setSelectedGroup(null)}
-        adminMode={true}
-        userId={user._id}
-      />
-    );
-  }
+
 
   const stats = calculateUserStats();
 
   return (
     <div className="user-groups-view">
       <div className="view-header">
-        <button className="back-btn" onClick={() => navigate('/admin')}>
+        <button className="back-btn" onClick={() => navigate(-1)}>
           <ArrowLeft size={20} />
           Back to Admin Dashboard
         </button>

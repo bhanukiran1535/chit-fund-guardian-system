@@ -31,7 +31,7 @@ export const GroupCard = ({ group }) => {
   });
 
   const handleDetailsClick = () => {
-    navigate(`/group/${group._id}/details`, { state: { group } });
+    navigate(`/user/group/${group._id}/details`, { state: { group } });
   };
 
   return (

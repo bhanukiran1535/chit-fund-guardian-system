@@ -2,9 +2,16 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, CreditCard, Clock, CheckCircle, AlertCircle, TrendingUp, X } from 'lucide-react';
 import { Progress } from './ui/progress';
+import { useLocation } from 'react-router-dom';
 import './GroupMonthDetails.css';
 
-export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false, userId }) => {
+export const GroupMonthDetails = () => {
+  const location = useLocation();
+  const routeState = location.state || {};
+  const userId = routeState.userId;
+  const propGroup = routeState.group;
+  const adminMode = routeState.adminMode ?? false;
+
   const [months, setMonths] = useState([]);
   const [groupInfo, setGroupInfo] = useState(null);
   const [shareAmount, setShareAmount] = useState(0);
@@ -18,19 +25,32 @@ export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false
   const API = import.meta.env.VITE_API_BASE_URL;
   const nav = useNavigate();
 
-  useEffect(() => {
-    async function loadData() {
+useEffect(() => {
+  async function loadData() {
+    try {
+      if (!groupId) return;
+
+      const requestBody = {
+        groupIds: [groupId],
+      };
+      console.log(userId);
+      if (adminMode && userId) {
+        requestBody.userId = userId;
+      }
+
       const [mRes, gRes] = await Promise.all([
         fetch(`${API}/month/my`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           credentials: 'include',
-          body: JSON.stringify({ groupIds: [groupId] }),
+          body: JSON.stringify(requestBody),
         }),
-        fetch(`${API}/group/${groupId}`, { credentials: 'include' }),
+        fetch(`${API}/group/${groupId}`, {
+          credentials: 'include',
+        }),
       ]);
-
       const mData = await mRes.json();
+      console.log(mData);
       const gData = await gRes.json();
 
       if (mData.success) {
@@ -41,14 +61,18 @@ export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false
         });
         setMonths(sorted);
       }
-
       if (gData.success) {
         setGroupInfo(gData.group);
         const member = gData.group.members.find(m => m.userId === gData.userId);
         setShareAmount(member?.shareAmount || 0);
         setHasPreBookedMonth(member?.preBookedMonth || "");
       }
+    }catch (err) {
+      console.error('Failed to load group/month details:', err);
+    } finally {
+      setLoading(false);
     }
+  }
 
     loadData();
   }, [API, groupId]);
@@ -171,14 +195,9 @@ export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false
   return (
     <div className="month-details-page">
       <div className="page-header">
-        <button className="back-btn" onClick={onClose || handleBack}>
-          ← {onClose ? 'Back' : 'Group List'}
+        <button className="back-btn" onClick={handleBack}>
+          ← {'Group List'}
         </button>
-        {onClose && (
-          <button className="close-btn" onClick={onClose}>
-            <X size={20} />
-          </button>
-        )}
       </div>
       <h1>Group {groupInfo.groupNo}: Monthly Breakdown</h1>
       
@@ -193,7 +212,7 @@ export const GroupMonthDetails = ({ group: propGroup, onClose, adminMode = false
           </div>
           <span className="progress-percentage">{Math.round(progressPercentage)}%</span>
         </div>
-        <Progress value={progressPercentage} className="progress-bar" />
+        <Progress value={Math.round(progressPercentage)} className="progress-bar" />
         <div className="progress-details">
           <span>Total Amount: ₹{shareAmount.toLocaleString()}</span>
           <span>Monthly Share: ₹{split.toLocaleString()}</span>

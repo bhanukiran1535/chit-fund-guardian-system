@@ -162,7 +162,7 @@ export const GroupMonthManagement = () => {
     return (
       <div className="group-month-management">
         <div className="management-header">
-          <button className="back-btn" onClick={() => navigate('/admin')}>
+          <button className="back-btn" onClick={() => navigate(-1)}>
             <ArrowLeft size={20} />
             Back to Admin Dashboard
           </button>

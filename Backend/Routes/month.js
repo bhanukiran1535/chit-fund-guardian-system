@@ -6,8 +6,8 @@ const userAuth = require('../middlewares/userAuth');
 // POST /month/my
 
 monthRoute.post('/my', userAuth, async (req, res) => {
-  const { groupIds } = req.body;
-  const userId = req.user._id;
+  const { groupIds, userId: customUserId } = req.body;
+  const userId = customUserId || req.user._id; // ✅ use passed userId if adminMode
 
   if (!Array.isArray(groupIds) || groupIds.length === 0) {
     return res.status(400).json({ success: false, message: 'Group IDs are required' });
