@@ -5,12 +5,17 @@ import { Progress } from './ui/progress';
 import { useLocation } from 'react-router-dom';
 import './GroupMonthDetails.css';
 
-export const GroupMonthDetails = () => {
+export const GroupMonthDetails = ({ 
+  adminMode: propAdminMode, 
+  userId: propUserId 
+} = {}) => {
   const location = useLocation();
   const routeState = location.state || {};
-  const userId = routeState.userId;
+  
+  // Support both props and route state for flexibility
+  const userId = propUserId || routeState.userId;
   const propGroup = routeState.group;
-  const adminMode = routeState.adminMode ?? false;
+  const adminMode = propAdminMode ?? routeState.adminMode ?? false;
 
   const [months, setMonths] = useState([]);
   const [groupInfo, setGroupInfo] = useState(null);
@@ -30,10 +35,12 @@ useEffect(() => {
     try {
       if (!groupId) return;
 
+      // Prepare API request body
       const requestBody = {
         groupIds: [groupId],
       };
-      console.log(userId);
+      
+      // In admin mode, fetch data for specific user instead of logged-in user
       if (adminMode && userId) {
         requestBody.userId = userId;
       }
@@ -198,8 +205,18 @@ useEffect(() => {
         <button className="back-btn" onClick={handleBack}>
           ← {'Group List'}
         </button>
+        {adminMode && (
+          <div className="admin-badge">
+            <span className="badge admin-view">👑 Admin View</span>
+          </div>
+        )}
       </div>
-      <h1>Group {groupInfo.groupNo}: Monthly Breakdown</h1>
+      <h1>
+        Group {groupInfo.groupNo}: Monthly Breakdown
+        {adminMode && userId && (
+          <span className="user-context"> - User: {userId}</span>
+        )}
+      </h1>
       
       {/* Progress Section */}
       <div className="progress-section">
