@@ -36,9 +36,9 @@ const formatNotification = (notif) => {
     case "join_group":
       title = "Join Group Request";
       if (status === "pending") {
-        message = `Your request to join ${group} with ${amount} is pending approval.`;
+        message = `Your request to join Group with ${amount} ChitValue is pending approval.`;
       } else if (status === "approved") {
-        message = `You’ve been added to ${group} with ${amount}.`;
+        message = `You’ve been added to ${group} of ${amount}.`;
       } else if (status === "rejected") {
         message = `Your join request for ${amount} couldn't be processed — no slots available in active groups.`;
       } else {
@@ -151,10 +151,6 @@ const formatNotification = (notif) => {
                           : "No Date"}
                       </span>
                     </div>
-
-                    {notification.status === "pending" && (
-                      <button className="view-btn">View Details</button>
-                    )}
                   </div>
                 </div>
               </div>

@@ -38,11 +38,9 @@ export const UserDashboard = ({ user }) => {
             extraMonthlyPayment: userInfo.extraMonthlyPayment || 0
           };
         });
-
         setGroups(groupsWithShare);
       }
     };
-
     fetchMyGroups();
   }, []);
 
@@ -61,26 +59,35 @@ export const UserDashboard = ({ user }) => {
 
     if (groups.length > 0) fetchMonthData();
   }, [groups]);
-
-  useEffect(() => {
+useEffect(() => {
+  const computeStatsAndGroups = async () => {
     const now = new Date();
+    const currentMonthValue = now.getFullYear() * 12 + now.getMonth();
+
     const computedGroups = groups.map(group => {
       const start = new Date(group.startMonth);
+      const startMonthValue = start.getFullYear() * 12 + start.getMonth();
+      const monthsPassed = currentMonthValue - startMonthValue + 1;
+
+      let groupStatus = 'upcoming';
+      if (monthsPassed > 0 && monthsPassed <= group.tenure) {
+        groupStatus = 'active';
+      } else if (monthsPassed > group.tenure) {
+        groupStatus = 'completed';
+      }
+
+      const currentMonth = Math.max(0, monthsPassed);
       const groupMonths = monthRecords.filter(m => m.groupId === group._id);
 
-      const monthsPassed = now.getFullYear() * 12 + now.getMonth();
-      const startMonthValue = start.getFullYear() * 12 + start.getMonth();
-      const currentMonth = monthsPassed - startMonthValue + 1;
-      
       let myPaymentStatus = 'upcoming';
       if (currentMonth > 0) {
         const pastMonths = groupMonths.filter(m => {
           const [monthName, year] = m.monthName.split(' ');
           const monthIndex = new Date(`${monthName} 1, ${year}`).getMonth();
           const monthValue = parseInt(year) * 12 + monthIndex;
-          return monthValue <= monthsPassed;
+          return monthValue <= currentMonthValue;
         });
-        
+
         if (pastMonths.some(m => m.status === 'due')) {
           myPaymentStatus = 'due';
         } else if (pastMonths.some(m => m.status === 'pending')) {
@@ -89,37 +96,54 @@ export const UserDashboard = ({ user }) => {
           myPaymentStatus = 'paid';
         }
       }
-      
+
       const nextDue = groupMonths.find(
         m => m.status === 'due' || m.status === 'pending'
       )?.monthName;
-      
+
       return {
         ...group,
-        currentMonth: currentMonth > 0 ? currentMonth : 0,
+        currentMonth,
         myPaymentStatus,
+        groupStatus,
         nextPaymentDue: nextDue || null,
       };
     });
 
     setMergedGroups(computedGroups);
-    
-    // Calculate real-time stats
-    const activeGroups = computedGroups.filter(g => g.status === 'active').length;
+
+    const activeGroups = computedGroups.filter(g => g.groupStatus === 'active').length;
     const totalPaid = monthRecords
       .filter(m => m.status === 'paid')
       .reduce((sum, m) => sum + (m.amount || 0), 0);
     const upcomingPayments = monthRecords
       .filter(m => m.status === 'due' || m.status === 'pending').length;
-    
+
+    // 🔁 Fetch pending requests from backend
+    let pendingRequests = 0;
+    try {
+      const res = await fetch(`${API_BASE}/request/my`, { credentials: 'include' });
+      const data = await res.json();
+      if (data.success) {
+        pendingRequests = data.requests.filter(req => req.status === 'pending').length;
+      }
+    } catch (err) {
+      console.error('Failed to fetch pending requests:', err);
+    }
+
+    // ✅ Final stats update once
     setStats({
       activeGroups,
       totalPaid,
       upcomingPayments,
-      pendingRequests: 0 // This would need API call to get pending join requests
+      pendingRequests
     });
-  }, [monthRecords]);
+  };
 
+  computeStatsAndGroups();
+}, [monthRecords]);
+
+   
   return (
     <div className="dashboard">
       <div className="welcome-section">

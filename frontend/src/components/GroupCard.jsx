@@ -33,7 +33,7 @@ export const GroupCard = ({ group }) => {
   const handleDetailsClick = () => {
     navigate(`/user/group/${group._id}/details`, { state: { group } });
   };
-
+  console.log(group);
   return (
     <div className="group-card">
       <div className="card-header">
@@ -68,8 +68,11 @@ export const GroupCard = ({ group }) => {
 
           <div className="info-item">
             <Calendar className="info-icon purple" />
-            <span className="info-label">Next Due:</span>
-            <span className="info-value">{group.nextPaymentDue ? new Date(group.nextPaymentDue).toLocaleDateString() : 'N/A'}</span>
+            <span className="info-label">Payout Month:</span>
+<span className="info-value">
+  {group.preBookedMonth ? group.preBookedMonth : 'Not Taken'}
+</span>
+
           </div>
         </div>
 
@@ -79,9 +82,6 @@ export const GroupCard = ({ group }) => {
             onClick={handleDetailsClick}
           >
             {group.myPaymentStatus === 'due' || group.myPaymentStatus === 'pending' ? 'Pay Now' : 'View Details'}
-          </button>
-          <button className="action-btn secondary">
-            Pre-book Payout
           </button>
         </div>
       </div>

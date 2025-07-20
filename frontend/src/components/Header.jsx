@@ -10,7 +10,7 @@ export const Header = ({ user, onLogout }) => {
       <div className="header-container">
         <div className="header-content">
           <div className="header-left">
-            <h1 className="app-title">ChitFund Guardian</h1>
+            <h1 className="app-title">MS ChitFund</h1>
             {user.isAdmin && (
               <div className="admin-badge">
                 <Shield className="admin-icon" />

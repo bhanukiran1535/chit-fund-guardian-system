@@ -52,7 +52,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
 }
 
 .stat-label {
@@ -70,7 +69,6 @@
 
 .stat-value {
   font-size: 1.5rem;
-  font-weight: bold;
 }
 
 .stat-value.blue { color: #2563eb; }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { Calendar, CreditCard, Clock, CheckCircle, AlertCircle, TrendingUp, X } from 'lucide-react';
+import { Calendar, CreditCard, Eye, Clock, CheckCircle, AlertCircle, TrendingUp, X } from 'lucide-react';
 import { Progress } from './ui/progress';
 import { useLocation } from 'react-router-dom';
 import './GroupMonthDetails.css';
@@ -52,12 +52,11 @@ useEffect(() => {
           credentials: 'include',
           body: JSON.stringify(requestBody),
         }),
-        fetch(`${API}/group/${groupId}`, {
+        fetch(`${API}/group/${groupId}${adminMode && userId ? `?userId=${userId}` : ''}`, {
           credentials: 'include',
         }),
       ]);
       const mData = await mRes.json();
-      console.log(mData);
       const gData = await gRes.json();
 
       if (mData.success) {
@@ -207,7 +206,7 @@ useEffect(() => {
         </button>
         {adminMode && (
           <div className="admin-badge">
-            <span className="badge admin-view">👑 Admin View</span>
+            <span className="badge admin-view"><Eye size={16} /> Admin View</span>
           </div>
         )}
       </div>
@@ -241,7 +240,7 @@ useEffect(() => {
         {months.map((m, i) => {
           const amount = calculateAmount(m.monthName, split, hasPreBookedMonth);
 
-          const canPrebook = m.status === 'upcoming' && !hasPreBookedMonth;
+          const canPrebook = m.status === 'upcoming' && !hasPreBookedMonth && adminMode===false;
 
           const prebookStatus = prebookStatuses[m.monthName];
           const canPay = m.status === 'due' || m.status === 'pending';

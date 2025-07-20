@@ -17,7 +17,6 @@ export const UserGroupsView = () => {
 
   useEffect(() => {
     if (selectedGroup && user) {
-      console.log(user,user._id);
       navigate(`/user/group/${selectedGroup._id}/details`, {
         state: {
           group: selectedGroup,

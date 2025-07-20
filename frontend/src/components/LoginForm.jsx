@@ -169,7 +169,7 @@ export const LoginForm = ({ onLogin }) => {
           <div className="logo-container">
             <Shield className="logo-icon" />
           </div>
-          <h1 className="login-title">ChitFund Guardian</h1>
+          <h1 className="login-title">MS ChitFund</h1>
           <p className="login-subtitle">
             {isSignUp ? 'Create your account to get started' : 'Sign in to manage your chit fund groups'}
           </p>

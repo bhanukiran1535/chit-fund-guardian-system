@@ -67,16 +67,18 @@ groupRoute.get('/allGroups', async (req, res) => {
 groupRoute.get('/my', userAuth, async (req, res) => {
   try {
     const userId = req.user._id;
+
     const groups = await Group.find({ "members.userId": userId })
       .select('-__v -createdAt -updatedAt -foremanCommission')
-      .lean(); // use lean for better performance and easier manipulation
+      .lean();
 
-    // Filter each group's members array to include only the current user
     const userGroups = groups.map(group => {
       const userMember = group.members.find(m => m.userId.toString() === userId.toString());
+
       return {
         ...group,
-        members: [userMember] // Keep only current user’s info
+        members: [userMember],
+        preBookedMonth: userMember?.preBookedMonth || null  // ⬅️ Add directly to group object
       };
     });
 
@@ -85,6 +87,7 @@ groupRoute.get('/my', userAuth, async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 });
+
 
 
 groupRoute.get('/status/:status', async (req, res) => {
@@ -116,13 +119,16 @@ groupRoute.get('/status/:status', async (req, res) => {
   }
 });
 
-// routes/group.js or similar
+// GET /group/:groupId?userId=xyz
 groupRoute.get('/:groupId', userAuth, async (req, res) => {
   try {
-    const group = await Group.findById(req.params.groupId);
+    const group = await Group.findById(req.params.groupId)
     if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
 
-    res.json({ success: true, group, userId: req.user._id });
+    // If admin is requesting for a different user
+    const requestedUserId = req.query.userId || req.user._id;
+
+    res.json({ success: true, group, userId: requestedUserId });
   } catch (err) {
     console.error('Error fetching group:', err);
     res.status(500).json({ success: false, message: 'Internal server error' });
