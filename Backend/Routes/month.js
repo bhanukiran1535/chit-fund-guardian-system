@@ -43,5 +43,40 @@ monthRoute.get('/group/:groupId/:monthName', async (req, res) => {
   }
 });
 
+// ✅ PERFORMANCE FIX: Batch endpoint for multiple months
+// POST /month/group/batch/:groupId
+monthRoute.post('/group/batch/:groupId', async (req, res) => {
+  const { groupId } = req.params;
+  const { monthNames } = req.body;
+
+  if (!Array.isArray(monthNames) || monthNames.length === 0) {
+    return res.status(400).json({ success: false, message: 'Month names array is required' });
+  }
+
+  try {
+    const monthsData = [];
+    
+    // Fetch all months data in parallel using Promise.all for better performance
+    const promises = monthNames.map(async (monthName) => {
+      const monthDetails = await Month.find({
+        groupId,
+        monthName
+      }).populate('userId', 'name email');
+      
+      return {
+        monthName,
+        monthDetails
+      };
+    });
+
+    const results = await Promise.all(promises);
+    
+    res.json({ success: true, monthsData: results });
+  } catch (error) {
+    console.error('Error fetching batch month data:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch batch month data' });
+  }
+});
+
 
 module.exports = monthRoute;

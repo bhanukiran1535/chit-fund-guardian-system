@@ -68,36 +68,78 @@ export const GroupMonthManagement = () => {
         });
       }
 
-      // Fetch actual payment data for each month
-      for (const month of generatedMonths) {
-        try {
-          const response = await fetch(`${API_BASE}/month/group/${groupData._id}/${month.monthName}`, {
-            credentials: 'include'
-          });
-          const data = await response.json();
-          
-          if (data.success) {
-            month.membersData = data.monthDetails || [];
-            // Update status based on actual payments
-            const paidMembers = month.membersData.filter(m => m.status === 'paid').length;
-            const totalMembers = groupData.members.length;
-            
-            if (paidMembers === totalMembers) {
-              month.status = 'cleared';
-            } else if (paidMembers > 0) {
-              month.status = 'pending';
-            } else if (month.monthDate <= currentDate) {
-              month.status = 'due';
+      // ✅ PERFORMANCE FIX: Fetch all months data in a single batch API call
+      const monthNames = generatedMonths.map(m => m.monthName);
+      try {
+        const response = await fetch(`${API_BASE}/month/group/batch/${groupData._id}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ monthNames })
+        });
+        const batchData = await response.json();
+        
+        if (batchData.success) {
+          // Map batch data to months
+          generatedMonths.forEach(month => {
+            const monthData = batchData.monthsData.find(data => data.monthName === month.monthName);
+            if (monthData) {
+              month.membersData = monthData.monthDetails || [];
+              // Update status based on actual payments
+              const paidMembers = month.membersData.filter(m => m.status === 'paid').length;
+              const totalMembers = groupData.members.length;
+              
+              if (paidMembers === totalMembers) {
+                month.status = 'cleared';
+              } else if (paidMembers > 0) {
+                month.status = 'pending';
+              } else if (month.monthDate <= currentDate) {
+                month.status = 'due';
+              }
             }
-          }
-        } catch (error) {
-          console.error(`Failed to fetch data for ${month.monthName}:`, error);
+          });
+        } else {
+          // Fallback to individual calls if batch endpoint doesn't exist
+          console.warn('Batch endpoint not available, falling back to individual calls');
+          await fetchMonthsIndividually(generatedMonths, groupData);
         }
+      } catch (error) {
+        console.warn('Batch fetch failed, falling back to individual calls:', error);
+        await fetchMonthsIndividually(generatedMonths, groupData);
       }
 
       setMonths(generatedMonths);
     } catch (error) {
       console.error('Failed to fetch group months:', error);
+    }
+  };
+
+  // Fallback function for individual API calls
+  const fetchMonthsIndividually = async (generatedMonths, groupData) => {
+    for (const month of generatedMonths) {
+      try {
+        const response = await fetch(`${API_BASE}/month/group/${groupData._id}/${month.monthName}`, {
+          credentials: 'include'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          month.membersData = data.monthDetails || [];
+          // Update status based on actual payments
+          const paidMembers = month.membersData.filter(m => m.status === 'paid').length;
+          const totalMembers = groupData.members.length;
+          
+          if (paidMembers === totalMembers) {
+            month.status = 'cleared';
+          } else if (paidMembers > 0) {
+            month.status = 'pending';
+          } else if (month.monthDate <= currentDate) {
+            month.status = 'due';
+          }
+        }
+      } catch (error) {
+        console.error(`Failed to fetch data for ${month.monthName}:`, error);
+      }
     }
   };
 
