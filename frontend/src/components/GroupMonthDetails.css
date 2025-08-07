@@ -2,9 +2,7 @@
   padding: 2rem 1rem;
   max-width: 900px;
   margin: 0 auto;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  min-height: 100vh;
-  color: white;
+  @apply bg-gradient-primary min-h-screen text-primary-foreground;
 }
 
 .page-header {
@@ -43,10 +41,7 @@ h1 {
 
 /* Progress Section */
 .progress-section {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 1.5rem;
-  border-radius: 12px;
-  margin-bottom: 2rem;
+  @apply bg-card/10 p-6 rounded-lg mb-8;
   backdrop-filter: blur(10px);
 }
 .progress-section span{
@@ -67,7 +62,7 @@ h1 {
 }
 
 .progress-icon {
-  color: #10b981;
+  @apply text-success;
 }
 
 .progress-text {
@@ -75,21 +70,15 @@ h1 {
 }
 
 .progress-percentage {
-  font-size: 1.25rem;
-  font-weight: bold;
-  color: #10b981;
+  @apply text-xl font-bold text-success;
 }
 
 .progress-bar {
-  height: 8px;
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 9999px;
-  overflow: hidden;
+  @apply h-2 bg-muted/20 rounded-full overflow-hidden;
 }
 
 .progress-bar [data-state="complete"] {
-  background: linear-gradient(90deg, #10b981, #34d399);
-  transition: all 0.3s ease;
+  @apply bg-success transition-all duration-300;
 }
 
 .progress-details {
@@ -139,12 +128,7 @@ h1 {
 
 .month-info {
   margin-left: 40px;
-  background: #fff;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  width: 100%;
+  @apply bg-card border border-border rounded-lg p-4 shadow-sm w-full;
 }
 
 .month-header {
@@ -161,10 +145,7 @@ h1 {
 }
 
 .month-title h3 {
-  margin: 0;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #1f2937;
+  @apply m-0 text-lg font-semibold text-card-foreground;
 }
 
 .month-actions {
@@ -187,23 +168,19 @@ h1 {
 }
 
 .prebook-btn {
-  background: #fef3c7;
-  color: #92400e;
-  border: 1px solid #fbbf24;
+  @apply bg-warning/10 text-warning border border-warning/40;
 }
 
 .prebook-btn:hover {
-  background: #fbbf24;
-  color: white;
+  @apply bg-warning text-warning-foreground;
 }
 
 .pay-btn {
-  background: #3b82f6;
-  color: white;
+  @apply bg-primary text-primary-foreground;
 }
 
 .pay-btn:hover {
-  background: #2563eb;
+  @apply bg-primary/90;
 }
 
 .prebook-btn:disabled,
@@ -221,13 +198,13 @@ h1 {
   width: fit-content;
 }
 
-.badge.paid { background: #dcfce7; color: #166534; }
-.badge.due { background: #fee2e2; color: #991b1b; }
-.badge.pending { background: #fef3c7; color: #92400e; }
-.badge.upcoming { background: #e0f2fe; color: #1e40af; }
-.badge.approved { background: #dcfce7; color: #166534; }
-.badge.rejected { background: #fee2e2; color: #991b1b; }
-.badge.failed { background: #fef2f2; color: #991b1b; font-style: italic; }
+.badge.paid { @apply bg-success/10 text-success; }
+.badge.due { @apply bg-destructive/10 text-destructive; }
+.badge.pending { @apply bg-warning/10 text-warning; }
+.badge.upcoming { @apply bg-info/10 text-info; }
+.badge.approved { @apply bg-success/10 text-success; }
+.badge.rejected { @apply bg-destructive/10 text-destructive; }
+.badge.failed { @apply bg-destructive/10 text-destructive italic; }
 
 /* Enhanced Prebooked Month Winner Styling */
 .month-item.prebooked-winner-month {
@@ -385,18 +362,15 @@ h1 {
 }
 
 .detail-row .label {
-  font-weight: 500;
-  color: #6b7280;
+  @apply font-medium text-muted-foreground;
 }
 
 .detail-row .value {
-  font-weight: 600;
-  color: #1f2937;
+  @apply font-semibold text-card-foreground;
 }
 
 .detail-row .value.prebooked {
-  color: #059669;
-  font-style: italic;
+  @apply text-success italic;
 }
 
 .loading {
@@ -424,14 +398,7 @@ h1 {
 }
 
 .payment-modal {
-  background: white;
-  border-radius: 12px;
-  padding: 0;
-  max-width: 400px;
-  width: 90%;
-  max-height: 90vh;
-  overflow: auto;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  @apply bg-card rounded-lg p-0 w-[90%] max-w-md max-h-[90vh] overflow-auto shadow-lg;
 }
 
 .modal-header {
@@ -443,10 +410,7 @@ h1 {
 }
 
 .modal-header h3 {
-  margin: 0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #1f2937;
+  @apply m-0 text-xl font-semibold text-card-foreground;
 }
 
 .close-btn {
@@ -471,26 +435,15 @@ h1 {
 }
 
 .payment-summary {
-  background: #7482ef;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
+  @apply bg-primary p-4 rounded-lg mb-6;
 }
 
 .payment-method label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: #374151;
+  @apply block mb-2 font-medium text-foreground;
 }
 
 .payment-method select {
-  width: 100%;
-  padding: 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 1rem;
-  background: white;
+  @apply w-full p-3 border border-border rounded-md text-base bg-background;
 }
 
 .modal-actions {
@@ -511,21 +464,19 @@ h1 {
 }
 
 .cancel-btn {
-  background: #f3f4f6;
-  color: #374151;
+  @apply bg-secondary text-secondary-foreground;
 }
 
 .cancel-btn:hover {
-  background: #e5e7eb;
+  @apply bg-secondary/80;
 }
 
 .confirm-btn {
-  background: #3b82f6;
-  color: white;
+  @apply bg-primary text-primary-foreground;
 }
 
 .confirm-btn:hover {
-  background: #2563eb;
+  @apply bg-primary/90;
 }
 
 .confirm-btn:disabled {
@@ -561,23 +512,15 @@ h1 {
 }
 
 .leave-group-btn {
-  padding: 0.5rem 1rem;
-  background-color: #f44336; /* Red */
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.3s ease;
+  @apply px-4 py-2 bg-destructive text-destructive-foreground border-0 rounded-md cursor-pointer font-medium transition-colors;
 }
 
 .leave-group-btn:hover {
-  background-color: #d32f2f;
+  @apply bg-destructive/90;
 }
 
 .leave-group-btn:disabled {
-  background-color: #f44336aa;
-  cursor: not-allowed;
+  @apply bg-destructive/60 cursor-not-allowed;
 }
 
 .badge.pending {
