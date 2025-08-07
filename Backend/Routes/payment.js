@@ -37,4 +37,34 @@ PaymentRouter.post('/make', userAuth, [
   }
 });
 
+// GET /payment/monthly-collection - For admin dashboard stats
+PaymentRouter.get('/monthly-collection', userAuth, async (req, res) => {
+  try {
+    // Get current month's total collection
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    const monthlyPayments = await Month.find({
+      status: 'paid',
+      paymentDate: {
+        $gte: startOfMonth,
+        $lte: endOfMonth
+      }
+    });
+
+    const totalCollection = monthlyPayments.reduce((sum, payment) => sum + (payment.amount || 0), 0);
+
+    res.json({ 
+      success: true, 
+      totalCollection,
+      paymentCount: monthlyPayments.length,
+      month: now.toLocaleString('default', { month: 'long', year: 'numeric' })
+    });
+  } catch (error) {
+    console.error('Error fetching monthly collection:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch monthly collection' });
+  }
+});
+
 module.exports = PaymentRouter;
