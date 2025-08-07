@@ -45,21 +45,25 @@ function generateMonths(startDate, tenure, groupId, userId,shareAmount) {
 }
 
 const addMemberToGroup = async (group, userId, amount) => {
-  // Add to members
-  try{
-  group.members.push({
-    userId,
-    shareAmount: amount
-  });
-  await group.save();
-
-  // Add payment records
-const monthEntries = generateMonths(group.startMonth, group.tenure, group._id, userId, amount);
-await Month.insertMany(monthEntries);
-  return { success: true, message: 'Member added and payments generated' };
-}catch(err){
-  return { success: false, message: err.message};
-}
+  const mongoose = require('mongoose');
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  try {
+    group.members.push({
+      userId,
+      shareAmount: amount
+    });
+    await group.save({ session });
+    const monthEntries = generateMonths(group.startMonth, group.tenure, group._id, userId, amount);
+    await Month.insertMany(monthEntries, { session });
+    await session.commitTransaction();
+    session.endSession();
+    return { success: true, message: 'Member added and payments generated' };
+  } catch (err) {
+    await session.abortTransaction();
+    session.endSession();
+    return { success: false, message: err.message };
+  }
 };
 
 module.exports = { addMemberToGroup };

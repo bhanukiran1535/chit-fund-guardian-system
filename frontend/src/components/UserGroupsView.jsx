@@ -22,6 +22,7 @@ export const UserGroupsView = () => {
           group: selectedGroup,
           adminMode: true,
           userId: user._id,
+          userFirstName:user.firstName
         }
       });
     }
@@ -165,6 +166,11 @@ export const UserGroupsView = () => {
                         {group.status}
                       </span>
                     </div>
+                    {group.userPreBookedMonth && (
+                    <div className="prebook-info">
+                      🎯 Pre-booked: {group.userPreBookedMonth}
+                    </div>
+                  )}
                     <div className="group-actions">
                       <button 
                         className="view-btn"
@@ -198,12 +204,6 @@ export const UserGroupsView = () => {
                   {group.userRole === 'foreman' && (
                     <div className="foreman-badge">
                       👑 Foreman
-                    </div>
-                  )}
-
-                  {group.userPreBookedMonth && (
-                    <div className="prebook-info">
-                      🎯 Pre-booked: {group.userPreBookedMonth}
                     </div>
                   )}
 

@@ -1,40 +1,40 @@
 
 import { DollarSign, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import './MonthlyPayments.css';
+import { useEffect, useState } from 'react';
+import { apiFetch } from '../lib/api';
 
 export const MonthlyPayments = ({ groups }) => {
-  // Mock monthly payment data
-  const payments = [
-    {
-      id: '1',
-      groupNo: 'G001',
-      month: 'March 2024',
-      amount: 5000,
-      dueDate: '2024-03-15',
-      status: 'due',
-      paymentMethod: null
-    },
-    {
-      id: '2',
-      groupNo: 'G002',
-      month: 'March 2024',
-      amount: 5000,
-      dueDate: '2024-03-20',
-      status: 'paid',
-      paymentMethod: 'Cash',
-      paidDate: '2024-03-18'
-    },
-    {
-      id: '3',
-      groupNo: 'G001',
-      month: 'February 2024',
-      amount: 5000,
-      dueDate: '2024-02-15',
-      status: 'paid',
-      paymentMethod: 'Online',
-      paidDate: '2024-02-14'
-    }
-  ];
+  const [payments, setPayments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    const fetchPayments = async () => {
+      setLoading(true);
+      setError('');
+      try {
+        // Fetch all months for all groups
+        const groupIds = groups.map(g => g._id);
+        const data = await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/month/my`, {
+          method: 'POST',
+          body: { groupIds },
+          showToast: false
+        });
+        if (data.success) {
+          setPayments(data.months || []);
+        } else {
+          setError(data.message || 'Failed to fetch payments');
+        }
+      } catch (err) {
+        setError(err.message || 'Failed to fetch payments');
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (groups && groups.length > 0) fetchPayments();
+    else setLoading(false);
+  }, [groups]);
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -50,6 +50,10 @@ export const MonthlyPayments = ({ groups }) => {
     const statusText = status.charAt(0).toUpperCase() + status.slice(1);
     return <span className={statusClass}>{statusText}</span>;
   };
+
+  if (loading) return <div className="card-content"><div className="loading">Loading payments...</div></div>;
+  if (error) return <div className="card-content"><div className="error">{error}</div></div>;
+  if (!payments || payments.length === 0) return <div className="card-content"><div className="empty-state">No payments found.</div></div>;
 
   return (
     <div className="payments-card">
@@ -78,11 +82,11 @@ export const MonthlyPayments = ({ groups }) => {
             </thead>
             <tbody>
               {payments.map((payment) => (
-                <tr key={payment.id}>
-                  <td className="font-medium">{payment.groupNo}</td>
-                  <td>{payment.month}</td>
-                  <td className="amount">₹{payment.amount.toLocaleString()}</td>
-                  <td>{new Date(payment.dueDate).toLocaleDateString()}</td>
+                <tr key={payment._id}>
+                  <td className="font-medium">{payment.groupNo || payment.groupId}</td>
+                  <td>{payment.monthName}</td>
+                  <td className="amount"> ₹{payment.amount?.toLocaleString() || ''}</td>
+                  <td>{payment.dueDate ? new Date(payment.dueDate).toLocaleDateString() : ''}</td>
                   <td>
                     <div className="status-cell">
                       {getStatusIcon(payment.status)}
@@ -94,7 +98,7 @@ export const MonthlyPayments = ({ groups }) => {
                       <button className="action-btn primary">Pay Now</button>
                     ) : payment.status === 'paid' ? (
                       <button className="action-btn disabled" disabled>
-                        Paid {payment.paidDate && `on ${new Date(payment.paidDate).toLocaleDateString()}`}
+                        Paid {payment.paymentDate && `on ${new Date(payment.paymentDate).toLocaleDateString()}`}
                       </button>
                     ) : (
                       <button className="action-btn secondary">View Details</button>

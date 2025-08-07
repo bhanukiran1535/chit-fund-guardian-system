@@ -1,101 +1,82 @@
 import { useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { X } from 'lucide-react';
 import './ForgotPasswordModal.css';
+import { apiFetch } from '../lib/api';
 
 export const ForgotPasswordModal = ({ isOpen, onClose }) => {
   const [step, setStep] = useState(1); // 1: Email, 2: OTP, 3: New Password
-  const [email, setEmail] = useState('');
-  const [otp, setOtp] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const {
+    register,
+    handleSubmit,
+    setError,
+    clearErrors,
+    formState: { errors },
+    watch,
+    reset
+  } = useForm();
+  const email = watch('email');
+  const otp = watch('otp');
+  const newPassword = watch('newPassword');
+  const confirmPassword = watch('confirmPassword');
 
-  const handleSendOtp = async (e) => {
-    e.preventDefault();
+  const handleSendOtp = async (data) => {
     setIsLoading(true);
-    setError('');
-
+    setSuccess('');
+    clearErrors();
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/forgot-password`, {
+      await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/request-password-reset`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-        credentials: 'include'
+        body: { email: data.email },
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to send OTP');
-      }
-
       setStep(2);
       setSuccess('OTP sent to your email. Check your inbox.');
     } catch (err) {
-      setError(err.message);
+      setError('email', { type: 'manual', message: err.message });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleResetPassword = async (e) => {
-    e.preventDefault();
-    
-    if (newPassword !== confirmPassword) {
-      setError('Passwords do not match');
+  const handleResetPassword = async (data) => {
+    if (data.newPassword !== data.confirmPassword) {
+      setError('confirmPassword', { type: 'manual', message: 'Passwords do not match' });
       return;
     }
-
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return;
-    }
-
     setIsLoading(true);
-    setError('');
-
+    setSuccess('');
+    clearErrors();
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/reset-password`, {
+      await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/reset-password`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp, newPassword }),
-        credentials: 'include'
+        body: {
+          email: data.email,
+          otp: data.otp,
+          newPassword: data.newPassword,
+        },
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to reset password');
-      }
-
       setStep(3);
       setSuccess('Password reset successfully!');
       setTimeout(() => {
         onClose();
-        resetForm();
+        reset();
+        setStep(1);
       }, 2000);
     } catch (err) {
-      setError(err.message);
+      setError('otp', { type: 'manual', message: err.message });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setStep(1);
-    setEmail('');
-    setOtp('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setError('');
-    setSuccess('');
-  };
-
   const handleClose = () => {
     onClose();
-    resetForm();
+    reset();
+    setStep(1);
+    setSuccess('');
+    clearErrors();
   };
 
   if (!isOpen) return null;
@@ -104,106 +85,78 @@ export const ForgotPasswordModal = ({ isOpen, onClose }) => {
     <div className="modal-overlay">
       <div className="modal-content">
         <div className="modal-header">
-          <h2>Reset Password</h2>
-          <button onClick={handleClose} className="close-button">
-            <X size={20} />
-          </button>
+          <h2>Forgot Password</h2>
+          <button className="close-button" onClick={handleClose}><X /></button>
         </div>
-
         {step === 1 && (
-          <form onSubmit={handleSendOtp} className="forgot-password-form">
-            <p className="modal-description">
-              Enter your email address and we'll send you an OTP to reset your password.
-            </p>
+          <form className="forgot-password-form" onSubmit={handleSubmit(handleSendOtp)}>
             <div className="form-group">
-              <label htmlFor="reset-email" className="form-label">Email</label>
+              <label className="form-label">Email</label>
               <input
-                id="reset-email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
                 className="form-input"
-                required
+                {...register('email', {
+                  required: 'Email is required',
+                  pattern: { value: /.+@.+\..+/, message: 'Invalid email address' },
+                })}
+                placeholder="Enter your email"
+                aria-invalid={!!errors.email}
               />
+              {errors.email && <span className="error-message">{errors.email.message}</span>}
+              {success && <span className="success-message">{success}</span>}
             </div>
-
-            {error && <p className="error-message">{error}</p>}
-            {success && <p className="success-message">{success}</p>}
-
             <button type="submit" className="submit-button" disabled={isLoading}>
-              {isLoading ? 'Sending...' : 'Send OTP'}
+              {isLoading ? 'Sending OTP...' : 'Send OTP'}
             </button>
           </form>
         )}
-
         {step === 2 && (
-          <form onSubmit={handleResetPassword} className="forgot-password-form">
-            <p className="modal-description">
-              Enter the OTP sent to your email and your new password.
-            </p>
+          <form className="forgot-password-form" onSubmit={handleSubmit(handleResetPassword)}>
             <div className="form-group">
-              <label htmlFor="reset-otp" className="form-label">OTP</label>
+              <label className="form-label">OTP</label>
               <input
-                id="reset-otp"
-                type="text"
-                value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                placeholder="Enter 6-digit OTP"
                 className="form-input"
-                maxLength="6"
-                required
+                {...register('otp', { required: 'OTP is required', minLength: { value: 6, message: 'OTP must be 6 digits' }, maxLength: { value: 6, message: 'OTP must be 6 digits' } })}
+                placeholder="Enter OTP"
+                aria-invalid={!!errors.otp}
               />
+              {errors.otp && <span className="error-message">{errors.otp.message}</span>}
             </div>
-
             <div className="form-group">
-              <label htmlFor="new-password" className="form-label">New Password</label>
+              <label className="form-label">New Password</label>
               <input
-                id="new-password"
                 type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Enter new password"
                 className="form-input"
-                required
+                {...register('newPassword', { required: 'New password is required', minLength: { value: 6, message: 'Password must be at least 6 characters' } })}
+                placeholder="New Password"
+                aria-invalid={!!errors.newPassword}
               />
+              {errors.newPassword && <span className="error-message">{errors.newPassword.message}</span>}
             </div>
-
             <div className="form-group">
-              <label htmlFor="confirm-new-password" className="form-label">Confirm New Password</label>
+              <label className="form-label">Confirm Password</label>
               <input
-                id="confirm-new-password"
                 type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm new password"
                 className="form-input"
-                required
+                {...register('confirmPassword', { required: 'Confirm your password' })}
+                placeholder="Confirm Password"
+                aria-invalid={!!errors.confirmPassword}
               />
+              {errors.confirmPassword && <span className="error-message">{errors.confirmPassword.message}</span>}
             </div>
-
-            {error && <p className="error-message">{error}</p>}
-
+            {success && <span className="success-message">{success}</span>}
             <div className="button-group">
-              <button 
-                type="button" 
-                onClick={() => setStep(1)} 
-                className="back-button"
-              >
-                Back
-              </button>
+              <button type="button" className="back-button" onClick={() => setStep(1)} disabled={isLoading}>Back</button>
               <button type="submit" className="submit-button" disabled={isLoading}>
                 {isLoading ? 'Resetting...' : 'Reset Password'}
               </button>
             </div>
           </form>
         )}
-
         {step === 3 && (
           <div className="success-screen">
             <div className="success-icon">✓</div>
-            <h3>Password Reset Successful!</h3>
-            <p>You can now login with your new password.</p>
+            <h3>Password reset successfully!</h3>
+            <p>You can now log in with your new password.</p>
           </div>
         )}
       </div>

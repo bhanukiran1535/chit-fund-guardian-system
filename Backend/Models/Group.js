@@ -5,7 +5,6 @@ const GroupSchema = new mongoose.Schema({
   // status - active,completed,upcoming
   groupNo:{
     type: String,
-    unique:true,
     required: true,
     
   },
@@ -34,6 +33,8 @@ foremanCommission:{
     required: true
 }
 }, { timestamps: true })
+GroupSchema.index({ groupNo: 1 }, { unique: true });
+GroupSchema.index({ 'members.userId': 1 });
 const GroupModel = mongoose.model('Group',GroupSchema);
 module.exports = GroupModel;
 

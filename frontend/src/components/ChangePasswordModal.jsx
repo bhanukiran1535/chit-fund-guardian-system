@@ -1,126 +1,108 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
 import { X } from 'lucide-react';
 import './ChangePasswordModal.css';
+import { apiFetch } from '../lib/api';
 
 export const ChangePasswordModal = ({ isOpen, onClose }) => {
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const {
+    register,
+    handleSubmit,
+    setError,
+    clearErrors,
+    formState: { errors },
+    watch,
+    reset,
+  } = useForm();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const newPassword = watch('newPassword');
+  const confirmPassword = watch('confirmPassword');
+
+  useEffect(() => {
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') handleClose();
+    };
+    if (isOpen) document.addEventListener('keydown', handleEsc);
+    return () => document.removeEventListener('keydown', handleEsc);
+  }, [isOpen]);
+
+  const handleClose = () => {
+    onClose();
+    reset();
+    setSuccess('');
+    clearErrors();
+  };
+
+  const onSubmit = async (data) => {
     if (newPassword !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters long');
+      setError('confirmPassword', { type: 'manual', message: 'Passwords do not match' });
       return;
     }
 
     setIsLoading(true);
-    setError('');
-
+    clearErrors();
+    setSuccess('');
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/change-password`, {
+      await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/change-password`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ currentPassword, newPassword }),
-        credentials: 'include'
+        body: {
+          currentPassword: data.currentPassword,
+          newPassword: data.newPassword,
+        },
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to change password');
-      }
 
       setSuccess('Password changed successfully!');
       setTimeout(() => {
-        onClose();
-        resetForm();
+        handleClose();
       }, 2000);
     } catch (err) {
-      setError(err.message);
+      setError('root', { type: 'manual', message: err.message || 'Something went wrong' });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setCurrentPassword('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setError('');
-    setSuccess('');
-  };
-
-  const handleClose = () => {
-    onClose();
-    resetForm();
-  };
-
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay">
+    <div className="modal-overlay" role="dialog" aria-modal="true">
       <div className="modal-content">
-        <div className="modal-header">
-          <h2>Change Password</h2>
-          <button onClick={handleClose} className="close-button">
-            <X size={20} />
-          </button>
-        </div>
+        <button className="close-btn" onClick={handleClose} aria-label="Close"><X /></button>
+        <h2>Change Password</h2>
+        <form className="change-password-form" onSubmit={handleSubmit(onSubmit)} noValidate>
+          <input
+            type="password"
+            {...register('currentPassword', { required: 'Current password is required' })}
+            placeholder="Current Password"
+            aria-invalid={!!errors.currentPassword}
+          />
+          {errors.currentPassword && <span className="error">{errors.currentPassword.message}</span>}
 
-        <form onSubmit={handleSubmit} className="change-password-form">
-          <div className="form-group">
-            <label htmlFor="current-password" className="form-label">Current Password</label>
-            <input
-              id="current-password"
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              placeholder="Enter current password"
-              className="form-input"
-              required
-            />
-          </div>
+          <input
+            type="password"
+            {...register('newPassword', {
+              required: 'New password is required',
+              minLength: { value: 6, message: 'Minimum 6 characters required' },
+            })}
+            placeholder="New Password"
+            aria-invalid={!!errors.newPassword}
+          />
+          {errors.newPassword && <span className="error">{errors.newPassword.message}</span>}
 
-          <div className="form-group">
-            <label htmlFor="new-password" className="form-label">New Password</label>
-            <input
-              id="new-password"
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Enter new password"
-              className="form-input"
-              required
-            />
-          </div>
+          <input
+            type="password"
+            {...register('confirmPassword', { required: 'Confirm your new password' })}
+            placeholder="Confirm New Password"
+            aria-invalid={!!errors.confirmPassword}
+          />
+          {errors.confirmPassword && <span className="error">{errors.confirmPassword.message}</span>}
 
-          <div className="form-group">
-            <label htmlFor="confirm-password" className="form-label">Confirm New Password</label>
-            <input
-              id="confirm-password"
-              type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="Confirm new password"
-              className="form-input"
-              required
-            />
-          </div>
+          {errors.root && <span className="error">{errors.root.message}</span>}
+          {success && <span className="success">{success}</span>}
 
-          {error && <p className="error-message">{error}</p>}
-          {success && <p className="success-message">{success}</p>}
-
-          <button type="submit" className="submit-button" disabled={isLoading}>
+          <button type="submit" disabled={isLoading}>
             {isLoading ? 'Changing...' : 'Change Password'}
           </button>
         </form>

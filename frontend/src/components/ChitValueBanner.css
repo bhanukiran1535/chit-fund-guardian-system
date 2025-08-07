@@ -63,3 +63,64 @@
 .join-btn:hover {
   background-color: #1d4ed8;
 }
+
+/* Fallback styles for custom dialog/modal */
+.dialog-fallback-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+}
+.dialog-fallback-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  min-width: 320px;
+  z-index: 1001;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.dialog-fallback-header {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+.dialog-fallback-description {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+.dialog-fallback-footer {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+}
+.dialog-fallback-btn {
+  padding: 0.6rem 1.5rem;
+  border-radius: 6px;
+  border: none;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  background: #2563eb;
+  color: #fff;
+  transition: background 0.2s;
+}
+.dialog-fallback-btn.outline {
+  background: #f3f4f6;
+  color: #374151;
+}
+.dialog-fallback-btn:hover {
+  background: #1d4ed8;
+}
+.dialog-fallback-btn.outline:hover {
+  background: #e5e7eb;
+}

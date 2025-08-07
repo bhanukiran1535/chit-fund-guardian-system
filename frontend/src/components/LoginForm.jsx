@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Shield } from 'lucide-react';
 import './LoginForm.css';
+import { apiFetch } from '../lib/api';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
 
 export const LoginForm = ({ onLogin }) => {
@@ -19,7 +20,7 @@ export const LoginForm = ({ onLogin }) => {
   const [otp, setOtp] = useState('');
   const [isVerifyingEmail, setIsVerifyingEmail] = useState(false);
   const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [showForgotModal, setShowForgotModal] = useState(false);
 
   const handleSendOtp = async () => {
     if (!email) {
@@ -31,18 +32,11 @@ export const LoginForm = ({ onLogin }) => {
     setError('');
     
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/send-otp`, {
+      await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/send-otp`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-        credentials: 'include'
+        body: { email },
+        showToast: false
       });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to send OTP');
-      }
       
       setShowOtpInput(true);
       setSuccess('OTP sent to your email. Check your inbox.');
@@ -63,18 +57,11 @@ export const LoginForm = ({ onLogin }) => {
     setError('');
     
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/user/verify-otp`, {
+      await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/verify-otp`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otp }),
-        credentials: 'include'
+        body: { email, otp },
+        showToast: false
       });
-      
-      const data = await res.json();
-      
-      if (!res.ok) {
-        throw new Error(data.message || 'Invalid OTP');
-      }
       
       setIsEmailVerified(true);
       setShowOtpInput(false);
@@ -123,19 +110,11 @@ export const LoginForm = ({ onLogin }) => {
           }
         : { email, password };
 
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}${endpoint}`,{
+      const data = await apiFetch(`${import.meta.env.VITE_API_BASE_URL}${endpoint}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        // body: JSON.stringify(body),
-        body: JSON.stringify(body),
-        credentials: 'include'
+        body,
+        showToast: false
       });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || (isSignUp ? 'Registration failed' : 'Login failed'));
-      }
 
       if (isSignUp) {
         setSuccess('Account created successfully! Please sign in.');
@@ -335,8 +314,13 @@ export const LoginForm = ({ onLogin }) => {
             </div>
           )}
 
-          {error && <p className="login-error">{error}</p>}
-          {success && <p className="login-success">{success}</p>}
+          {!isSignUp && (
+            <div className="forgot-password-link" style={{ textAlign: 'right', marginTop: '0.5rem' }}>
+              <button type="button" className="link-btn" onClick={() => setShowForgotModal(true)}>
+                Forgot Password?
+              </button>
+            </div>
+          )}
 
           <button 
             type="submit" 
@@ -348,24 +332,11 @@ export const LoginForm = ({ onLogin }) => {
               : (isSignUp ? 'Create Account' : 'Sign In')
             }
           </button>
-
-          {!isSignUp && (
-            <div className="forgot-password-link">
-              <button
-                type="button"
-                onClick={() => setShowForgotPassword(true)}
-                className="link-button"
-              >
-                Forgot your password?
-              </button>
-            </div>
-          )}
         </form>
+        <ForgotPasswordModal isOpen={showForgotModal} onClose={() => setShowForgotModal(false)} />
 
-        <ForgotPasswordModal 
-          isOpen={showForgotPassword} 
-          onClose={() => setShowForgotPassword(false)} 
-        />
+        {error && <p className="login-error">{error}</p>}
+        {success && <p className="login-success">{success}</p>}
       </div>
     </div>
   );

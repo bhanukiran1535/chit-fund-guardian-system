@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Calendar, CheckCircle, AlertTriangle, Users, DollarSign, Clock } from 'lucide-react';
 import { MonthUserStatus } from './MonthUserStatus';
 import './GroupMonthManagement.css';
+import { apiFetch } from '../lib/api';
 
 export const GroupMonthManagement = () => {
   const { groupId } = useParams();
@@ -23,17 +24,13 @@ export const GroupMonthManagement = () => {
   const fetchGroupData = async () => {
     try {
       // Fetch group details
-      const groupRes = await fetch(`${API_BASE}/group/${groupId}`, {
-        credentials: 'include'
-      });
-      const groupData = await groupRes.json();
-
+      const groupData = await apiFetch(`${API_BASE}/group/${groupId}`, { showToast: false });
       if (groupData.success) {
         setGroup(groupData.group);
         await fetchGroupMonths(groupData.group);
       }
     } catch (error) {
-      console.error('Failed to fetch group:', error);
+      setGroup(null);
     } finally {
       setLoading(false);
     }
@@ -49,17 +46,13 @@ export const GroupMonthManagement = () => {
       for (let i = 0; i < groupData.tenure; i++) {
         const monthDate = new Date(startDate);
         monthDate.setMonth(monthDate.getMonth() + i);
-        
         const monthName = `${monthDate.toLocaleDateString('en-US', { month: 'long' })} ${monthDate.getFullYear()}`;
-        
-        // Determine status based on current date
         let status = 'upcoming';
         if (monthDate <= currentDate) {
           const nextMonth = new Date(monthDate);
           nextMonth.setMonth(nextMonth.getMonth() + 1);
           status = nextMonth <= currentDate ? 'due' : 'pending';
         }
-
         generatedMonths.push({
           monthName,
           monthDate,
@@ -67,7 +60,6 @@ export const GroupMonthManagement = () => {
           membersData: []
         });
       }
-
       // ✅ PERFORMANCE FIX: Fetch all months data in a single batch API call
       const monthNames = generatedMonths.map(m => m.monthName);
       try {
@@ -107,10 +99,9 @@ export const GroupMonthManagement = () => {
         console.warn('Batch fetch failed, falling back to individual calls:', error);
         await fetchMonthsIndividually(generatedMonths, groupData);
       }
-
       setMonths(generatedMonths);
     } catch (error) {
-      console.error('Failed to fetch group months:', error);
+      setMonths([]);
     }
   };
 

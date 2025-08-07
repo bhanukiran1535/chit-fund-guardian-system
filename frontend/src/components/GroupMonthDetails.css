@@ -547,3 +547,45 @@ h1 {
     transform: translateY(0);
   }
 }
+
+.bg-primary {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+.bg-secondary {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.leave-group-section {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.leave-group-btn {
+  padding: 0.5rem 1rem;
+  background-color: #f44336; /* Red */
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.3s ease;
+}
+
+.leave-group-btn:hover {
+  background-color: #d32f2f;
+}
+
+.leave-group-btn:disabled {
+  background-color: #f44336aa;
+  cursor: not-allowed;
+}
+
+.badge.pending {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  background-color: #ff9800; /* Orange */
+  color: white;
+  font-weight: 500;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}

@@ -6,14 +6,22 @@ const userAuth = require('../middlewares/userAuth');
 const adminAuth = require('../middlewares/adminAuth');
 const { addMemberToGroup } =require('../Utils/addMemberToGroup');
 const Group = require('../Models/Group');
+const { body, validationResult } = require('express-validator');
+const AuditLog = require('../Models/AuditLog');
 
 // POST /request/join
-requestRoute.post('/join', userAuth, async (req, res) => {
+requestRoute.post('/join', userAuth, [
+  body('amount').isNumeric().withMessage('Amount is required and must be a number'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
   try {
     const { amount } = req.body;
     if (!amount) {
       return res.status(400).json({ success: false, message: 'Amount is required' });
-    }
+    } 
 
     // Check if user already has a pending join request
     const existing = await Request.findOne({ 
@@ -50,7 +58,14 @@ requestRoute.get('/my', userAuth, async (req, res) => {
 });
 
 
-requestRoute.post('/withdraw', userAuth, async (req, res) => {
+requestRoute.post('/withdraw', userAuth, [
+  body('amount').isNumeric().withMessage('Amount is required and must be a number'),
+  body('type').notEmpty().withMessage('Type is required'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
   try {
     const userId = req.user._id;
     const { amount, type } = req.body;
@@ -76,7 +91,15 @@ requestRoute.post('/withdraw', userAuth, async (req, res) => {
   }
 });
 // @route POST /request/prebook
-requestRoute.post('/prebook', userAuth, async (req, res) => {
+requestRoute.post('/prebook', userAuth, [
+  body('groupId').isMongoId().withMessage('Group ID is required'),
+  body('monthName').notEmpty().withMessage('Month name is required'),
+  body('shareAmount').isNumeric().withMessage('Share amount is required and must be a number'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
   const { groupId, monthName, shareAmount } = req.body;
   const userId = req.user._id;
 
@@ -114,7 +137,15 @@ requestRoute.post('/prebook', userAuth, async (req, res) => {
 });
 
 // 2. Send Payment Confirmation Request
-requestRoute.post('/payment', userAuth, async (req, res) => {
+requestRoute.post('/payment', userAuth, [
+  body('groupId').isMongoId().withMessage('Group ID is required'),
+  body('monthName').notEmpty().withMessage('Month name is required'),
+  body('amount').isNumeric().withMessage('Amount is required and must be a number'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
   try {
     const { groupId, monthName, amount } = req.body;
     const newRequest = new Request({
@@ -132,7 +163,13 @@ requestRoute.post('/payment', userAuth, async (req, res) => {
 });
 
 // 3. Send Leave Group Request
-requestRoute.post('/leave', userAuth, async (req, res) => {
+requestRoute.post('/leave', userAuth, [
+  body('groupId').isMongoId().withMessage('Group ID is required'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
   try {
     const { groupId } = req.body;
     const newRequest = new Request({
@@ -184,7 +221,15 @@ function generateMessage(req) {
 }
 
 // ✅ 2. POST /request/approve
-requestRoute.post('/approve', userAuth, adminAuth, async (req, res) => {
+requestRoute.post('/approve', userAuth, adminAuth, [
+  body('requestId').isMongoId().withMessage('Request ID is required'),
+  body('seclectedgroupId').optional().isMongoId().withMessage('Group ID must be valid'),
+  body('groupId').optional().isMongoId().withMessage('Group ID must be valid'),
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
   const { requestId, seclectedgroupId, groupId} = req.body;
   if (!requestId) {
     return res.status(400).json({ success: false, message: 'Request ID is required' });
@@ -216,6 +261,8 @@ requestRoute.post('/approve', userAuth, adminAuth, async (req, res) => {
     request.status = 'approved';
     await request.save();
 
+    await AuditLog.create({ action: 'approve_request', performedBy: req.user._id, targetId: requestId, details: { type: request.type, userId: request.userId, groupId: request.groupId, status: request.status } });
+
     return res.json({ success: true, message: 'Pre-book request approved' });
   }
     // ✅ If request type is join_group, add user to group + generate dues
@@ -238,10 +285,51 @@ requestRoute.post('/approve', userAuth, adminAuth, async (req, res) => {
       if(!result.success) return res.status(500).json({ success: false, message: result.message })
     }
     
+    // ✅ If request type is confirm_cash_payment, mark month as paid
+    if (request.type === 'confirm_cash_payment') {
+      const Month = require('../Models/MonthDetails');
+      const monthDoc = await Month.findOne({
+        userId: request.userId,
+        groupId: request.groupId,
+        monthName: request.monthName
+      });
+      if (!monthDoc) {
+        return res.status(404).json({ success: false, message: 'Month entry not found for cash confirmation.' });
+      }
+      monthDoc.status = 'paid';
+      monthDoc.paymentMethod = 'cash';
+      await monthDoc.save();
+      request.status = 'approved';
+      await request.save();
+      await AuditLog.create({ action: 'approve_request', performedBy: req.user._id, targetId: requestId, details: { type: request.type, userId: request.userId, groupId: request.groupId, status: request.status } });
+      return res.json({ success: true, message: 'Cash payment confirmed and marked as paid.' });
+    }
+
+    // ✅ If request type is leave_group, remove user from group and delete all their MonthDetails
+    if (request.type === 'leave_group') {
+      const Group = require('../Models/Group');
+      const Month = require('../Models/MonthDetails');
+      const group = await Group.findById(request.groupId);
+      if (!group) {
+        return res.status(404).json({ success: false, message: 'Group not found for leave request.' });
+      }
+      // Remove user from group.members
+      group.members = group.members.filter(m => m.userId?.toString() !== request.userId.toString());
+      await group.save();
+      // Delete all MonthDetails for this user in this group
+      await Month.deleteMany({ userId: request.userId, groupId: request.groupId });
+      request.status = 'approved';
+      await request.save();
+      await AuditLog.create({ action: 'approve_request', performedBy: req.user._id, targetId: requestId, details: { type: request.type, userId: request.userId, groupId: request.groupId, status: request.status } });
+      return res.json({ success: true, message: 'User removed from group and all month records deleted.' });
+    }
+    
     // ✅ Approve the request
     request.groupId = seclectedgroupId;
     request.status = 'approved';
     await request.save();
+
+    await AuditLog.create({ action: 'approve_request', performedBy: req.user._id, targetId: requestId, details: { type: request.type, userId: request.userId, groupId: request.groupId, status: request.status } });
 
     res.json({ success: true, message: 'Request approved and user added to group' });
   }catch (err) {
@@ -253,6 +341,10 @@ requestRoute.post('/approve', userAuth, adminAuth, async (req, res) => {
 
 // ✅ 3. POST /request/reject
 requestRoute.post('/reject',userAuth,adminAuth, async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ success: false, errors: errors.array() });
+  }
   const { requestId } = req.body;
 
   if (!requestId) {
@@ -271,6 +363,8 @@ requestRoute.post('/reject',userAuth,adminAuth, async (req, res) => {
 
     request.status = 'rejected';
     await request.save();
+
+    await AuditLog.create({ action: 'reject_request', performedBy: req.user._id, targetId: requestId, details: { type: request.type, userId: request.userId, groupId: request.groupId, status: request.status } });
 
     res.json({ success: true, message: 'Request rejected' });
   } catch (err) {

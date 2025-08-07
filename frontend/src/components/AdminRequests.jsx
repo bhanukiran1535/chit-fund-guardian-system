@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle, XCircle, Clock, Users, DollarSign, Calendar } from 'lucide-react';
+import { CheckCircle, XCircle, Clock, Users, DollarSign, Calendar, ReceiptText } from 'lucide-react';
 import './AdminRequests.css';
+import { getCsrfToken } from '../lib/utils';
+import { apiFetch } from '../lib/api';
 
 export const AdminRequests = () => {
   const [requests, setRequests] = useState([]);
@@ -56,6 +58,7 @@ export const AdminRequests = () => {
       case 'payment_confirmation': return <DollarSign className="type-icon green" />;
       case 'month_prebook': return <Calendar className="type-icon purple" />;
       case 'leave_group': return <XCircle className="type-icon red" />;
+      case 'confirm_cash_payment': return <ReceiptText className="type-icon orange" />;
       default: return <Clock className="type-icon gray" />;
     }
   };
@@ -65,7 +68,8 @@ export const AdminRequests = () => {
       'join_group': 'Join Group',
       'payment_confirmation': 'Payment',
       'month_prebook': 'Payout Booking',
-      'leave_group': 'Leave Group'
+      'leave_group': 'Leave Group',
+      'confirm_cash_payment': 'Cash Confirmation',
     };
     
     const typeClass = `type-badge type-${type.replace('_', '-')}`;
@@ -90,44 +94,26 @@ export const AdminRequests = () => {
       payload.groupId = groupId;
     }
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/request/approve`, {
+      await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/request/approve`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify(payload),
+        body: payload,
       });
-      const data = await res.json();
-      if (data.success) {
-        setRequests(prev => prev.filter(r => r.id !== requestId));
-        alert('Request approved.');
-      } else {
-        alert(data.message || 'Failed to approve request.');
-      }
+      setRequests(prev => prev.filter(r => r.id !== requestId));
+      alert('Request approved.');
     } catch (err) {
-      console.error(err);
-      alert('Error approving request.');
+      // error toast handled by apiFetch
     }
   };
 
   const handleReject = async (requestId) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/request/reject`, {
+      await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/request/reject`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ requestId }),
+        body: { requestId },
       });
-      const data = await res.json();
-      if (data.success) {
-        setRequests(prev => prev.filter(r => r.id !== requestId));
-        alert('Request rejected.');
-      } else {
-        alert(data.message || 'Failed to reject request.');
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Error rejecting request.');
-    }
+      setRequests(prev => prev.filter(r => r.id !== requestId));
+      alert('Request rejected.');
+    } catch (err) {}
   };
 
   return (
@@ -215,7 +201,11 @@ export const AdminRequests = () => {
                           <span className="na">N/A</span>
                         )}
                       </td>
-                      <td className="message-cell">{request.message}</td>
+                      <td className="message-cell">
+                        {request.type === 'confirm_cash_payment' && request.monthName ? (
+                          <span>Cash payment for <b>{request.monthName}</b></span>
+                        ) : request.message}
+                      </td>
                       <td className="date-cell">
                         {new Date(request.timestamp).toLocaleDateString()}
                       </td>
@@ -223,7 +213,7 @@ export const AdminRequests = () => {
                         <div className="actions-cell">
                           <button
                             className="action-btn approve"
-                            onClick={() => handleApprove(request.id,request.type,request.groupId)}
+                            onClick={() => handleApprove(request.id, request.type, request.groupId?._id || request.groupId)}
                           >
                             <CheckCircle className="btn-icon" />
                             Approve

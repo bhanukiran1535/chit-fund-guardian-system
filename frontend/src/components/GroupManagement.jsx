@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Calendar, Users, Settings, Eye, Plus } from 'lucide-react';
 import { GroupDetailsView } from './GroupDetailsView';
 import './GroupManagement.css';
+import { apiFetch } from '../lib/api';
 
 export const GroupManagement = () => {
   const [groups, setGroups] = useState([]);
@@ -22,21 +23,18 @@ export const GroupManagement = () => {
 
 
 const fetchGroups = async () => {
+  setLoading(true);
   try {
     const statuses = ['active', 'upcoming'];
-
     const responses = await Promise.all(
       statuses.map(status =>
-        fetch(`${import.meta.env.VITE_API_BASE_URL}/group/allGroups?status=${status}`, {
-          credentials: 'include',
-        }).then(res => res.json())
+        apiFetch(`${import.meta.env.VITE_API_BASE_URL}/group/allGroups?status=${status}`, { showToast: false })
       )
     );
-
     const allGroups = responses.flatMap(r => (r.success ? r.groups : []));
     setGroups(allGroups);
   } catch (err) {
-    console.error('Failed to fetch groups:', err);
+    setGroups([]);
   } finally {
     setLoading(false);
   }
@@ -65,6 +63,9 @@ function calculateCurrentMonth(startDateISO) {
     const statusText = status.charAt(0).toUpperCase() + status.slice(1);
     return <span className={statusClass}>{statusText}</span>;
   };
+
+  if (loading) return <p>Loading groups...</p>;
+  if (groups.length === 0) return <p>No groups found.</p>;
 
   return (
     <div className="groups-card">

@@ -4,16 +4,22 @@ import { Calendar, CreditCard, Eye, Clock, CheckCircle, AlertCircle, TrendingUp,
 import { Progress } from './ui/progress';
 import { useLocation } from 'react-router-dom';
 import './GroupMonthDetails.css';
+import { getCsrfToken } from '../lib/utils';
+import { apiFetch } from '../lib/api';
+import { useForm } from 'react-hook-form';
+import { toast } from './ui/sonner';
 
 export const GroupMonthDetails = ({ 
   adminMode: propAdminMode, 
-  userId: propUserId 
+  userId: propUserId
 } = {}) => {
   const location = useLocation();
   const routeState = location.state || {};
   
   // Support both props and route state for flexibility
   const userId = propUserId || routeState.userId;
+  console.log(routeState);
+  const firstName = routeState.user?.firstName;
   const propGroup = routeState.group;
   const adminMode = propAdminMode ?? routeState.adminMode ?? false;
 
@@ -29,36 +35,24 @@ export const GroupMonthDetails = ({
   const { groupId } = useParams();
   const API = import.meta.env.VITE_API_BASE_URL;
   const nav = useNavigate();
+  const [cashRequests, setCashRequests] = useState({});
+  const [leaveRequestStatus, setLeaveRequestStatus] = useState(null);
 
 useEffect(() => {
   async function loadData() {
+    setLoading(true);
     try {
       if (!groupId) return;
-
-      // Prepare API request body
-      const requestBody = {
-        groupIds: [groupId],
-      };
-      
-      // In admin mode, fetch data for specific user instead of logged-in user
-      if (adminMode && userId) {
-        requestBody.userId = userId;
-      }
-
-      const [mRes, gRes] = await Promise.all([
-        fetch(`${API}/month/my`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify(requestBody),
-        }),
-        fetch(`${API}/group/${groupId}${adminMode && userId ? `?userId=${userId}` : ''}`, {
-          credentials: 'include',
-        }),
-      ]);
-      const mData = await mRes.json();
-      const gData = await gRes.json();
-
+      const requestBody = { groupIds: [groupId] };
+      if (adminMode && userId) requestBody.userId = userId;
+      const mData = await apiFetch(`${API}/month/my`, {
+        method: 'POST',
+        body: requestBody,
+        showToast: false
+      });
+      const gData = await apiFetch(`${API}/group/${groupId}${adminMode && userId ? `?userId=${userId}` : ''}`, {
+        showToast: false
+      });
       if (mData.success) {
         const sorted = mData.months.sort((a, b) => {
           const [monthA, yearA] = a.monthName.split(' ');
@@ -73,15 +67,14 @@ useEffect(() => {
         setShareAmount(member?.shareAmount || 0);
         setHasPreBookedMonth(member?.preBookedMonth || "");
       }
-    }catch (err) {
-      console.error('Failed to load group/month details:', err);
+    } catch (err) {
+      // error toast handled by apiFetch
     } finally {
       setLoading(false);
     }
   }
-
-    loadData();
-  }, [API, groupId]);
+  loadData();
+}, [API, groupId]);
 
   useEffect(() => {
     async function fetchPrebookRequests() {
@@ -90,50 +83,50 @@ useEffect(() => {
         const data = await res.json();
         if (data.success) {
           const statuses = {};
-          data.requests
-          .filter(r => r.type === 'month_prebook' && r.groupId._id === groupId)
-          .forEach(r => {
+          const cashReqs = {};
+          let leaveStatus = null;
+          data.requests.forEach(r => {
+            if (r.type === 'month_prebook' && r.groupId._id === groupId) {
               statuses[r.monthName] = r.status;
               if (r.status === 'approved') {
                 setHasPreBookedMonth(r.monthName); // set prebooked month from request if approved
               }
-            });
+            }
+            if (r.type === 'confirm_cash_payment' && r.groupId._id === groupId) {
+              cashReqs[r.monthName] = r.status;
+            }
+            if (r.type === 'leave_group' && r.groupId._id === groupId) {
+              leaveStatus = r.status;
+            }
+          });
           setPrebookStatuses(statuses);
+          setCashRequests(cashReqs);
+          // Only show leave request status if user is still not a member
+          if (groupInfo && groupInfo.members && groupInfo.members.some(m => m.userId === gData.userId)) {
+            setLeaveRequestStatus(null);
+          } else {
+            setLeaveRequestStatus(leaveStatus);
+          }
         }
       } catch (err) {
-        console.error("Failed to fetch prebook requests", err);
+        console.error("Failed to fetch prebook/cash/leave requests", err);
       }
     }
 
     fetchPrebookRequests();
-  }, [API, groupId]);
+  }, [API, groupId, groupInfo]);
 
   const handlePreBook = async (monthName) => {
     setLoading(true);
     setPrebookStatuses(prev => ({ ...prev, [monthName]: 'pending' }));
 
     try {
-      const response = await fetch(`${API}/request/prebook`, {
+      await apiFetch(`${API}/request/prebook`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ groupId, monthName, shareAmount }),
+        body: { groupId, monthName, shareAmount },
       });
-
-      const data = await response.json();
-
-      if (data.success) {
-        if (data.status === 'approved') {
-          setPrebookStatuses(prev => ({ ...prev, [monthName]: 'approved' }));
-          setHasPreBookedMonth(monthName);
-        } else {
-          setPrebookStatuses(prev => ({ ...prev, [monthName]: 'pending' }));
-        }
-      } else {
-        setPrebookStatuses(prev => ({ ...prev, [monthName]: 'failed' }));
-      }
+      setPrebookStatuses(prev => ({ ...prev, [monthName]: 'pending' }));
     } catch (error) {
-      console.error('Prebook failed:', error);
       setPrebookStatuses(prev => ({ ...prev, [monthName]: 'failed' }));
     }
 
@@ -163,40 +156,131 @@ useEffect(() => {
     setShowPaymentModal(true);
   };
 
-  const submitPayment = async () => {
+  const submitPayment = async (data) => {
     setLoading(true);
     try {
-      const response = await fetch(`${API}/payment/make`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({
-          groupId,
-          monthName: selectedMonth.monthName,
-          paymentMethod,
-          paymentDate: new Date().toISOString(),
-        }),
-      });
-
-      const data = await response.json();
-      if (data.success) {
+      if (data.paymentMethod === 'cash' && !adminMode) {
+        // Only send cash confirmation request, do not mark as paid
+        await apiFetch(`${API}/request/payment`, {
+          method: 'POST',
+          body: {
+            groupId,
+            monthName: selectedMonth.monthName,
+            amount: calculateAmount(selectedMonth.monthName, split, hasPreBookedMonth),
+          },
+        });
+        setShowPaymentModal(false);
+        toast.success('Cash payment confirmation request sent!');
+        // Optionally refresh requests
+        const res = await fetch(`${API}/request/my`, { credentials: 'include' });
+        const dataReq = await res.json();
+        if (dataReq.success) {
+          const cashReqs = {};
+          dataReq.requests.forEach(r => {
+            if (r.type === 'confirm_cash_payment' && r.groupId._id === groupId) {
+              cashReqs[r.monthName] = r.status;
+            }
+          });
+          setCashRequests(cashReqs);
+        }
+      } else {
+        // Normal payment flow for UPI/bank
+        await apiFetch(`${API}/payment/make`, {
+          method: 'POST',
+          body: {
+            groupId,
+            monthName: selectedMonth.monthName,
+            paymentMethod: data.paymentMethod,
+            paymentDate: new Date().toISOString(),
+          },
+        });
         setShowPaymentModal(false);
         location.reload();
       }
     } catch (error) {
       console.error('Payment failed:', error);
+      toast.error('Payment failed.');
     }
     setLoading(false);
   };
 
-  if (!groupInfo) return <div className="loading">🌀 Loading...</div>;
+  const handleCashConfirmRequest = async (month) => {
+    setLoading(true);
+    try {
+      await apiFetch(`${API}/request/payment`, {
+        method: 'POST',
+        body: {
+          groupId,
+          monthName: month.monthName,
+          amount: calculateAmount(month.monthName, split, hasPreBookedMonth),
+        },
+      });
+      toast.success('Cash payment confirmation request sent!');
+      // Refresh requests
+      const res = await fetch(`${API}/request/my`, { credentials: 'include' });
+      const data = await res.json();
+      if (data.success) {
+        const cashReqs = {};
+        data.requests.forEach(r => {
+          if (r.type === 'confirm_cash_payment' && r.groupId._id === groupId) {
+            cashReqs[r.monthName] = r.status;
+          }
+        });
+        setCashRequests(cashReqs);
+      }
+    } catch (err) {
+      toast.error('Failed to send cash payment confirmation request.');
+    }
+    setLoading(false);
+  };
+
+  const handleLeaveGroupRequest = async () => {
+    setLoading(true);
+    try {
+      await apiFetch(`${API}/request/leave`, {
+        method: 'POST',
+        body: { groupId },
+      });
+      toast.success('Leave group request sent!');
+      setLeaveRequestStatus('pending');
+    } catch (err) {
+      toast.error('Failed to send leave group request.');
+    }
+    setLoading(false);
+  };
+
+  if (loading) return <div className="loading">Loading...</div>;
+  if (!groupInfo) return <div className="loading">Group not found.</div>;
 
   const split = shareAmount / groupInfo.tenure;
   const handleBack = () => nav(-1);
  
   const completedPayments = months.filter(m => m.status === 'paid').length;
   const totalMonths = months.length;
-  const progressPercentage = totalMonths > 0 ? (completedPayments / totalMonths) * 100 : 0;
+  let progressPercentage = totalMonths > 0 ? (completedPayments / totalMonths) * 100 : 0;
+  if (isNaN(progressPercentage) || !isFinite(progressPercentage)) progressPercentage = 0;
+  progressPercentage = Math.max(0, Math.min(100, progressPercentage));
+
+  const PaymentModal = ({ onClose, onSubmit, isLoading, defaultMethod }) => {
+    const { register, handleSubmit, formState: { errors } } = useForm({ defaultValues: { paymentMethod: defaultMethod || 'upi' } });
+    return (
+      <div className="modal-overlay">
+        <div className="modal-content">
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <h3>Make Payment</h3>
+            <select {...register('paymentMethod', { required: 'Select a payment method' })}>
+              <option value="upi">UPI</option>
+              <option value="cash">Cash</option>
+              <option value="bank">Bank Transfer</option>
+            </select>
+            {errors.paymentMethod && <span className="error">{errors.paymentMethod.message}</span>}
+            <button type="submit" disabled={isLoading}>{isLoading ? 'Processing...' : 'Pay Now'}</button>
+            <button type="button" onClick={onClose} className="cancel-btn">Cancel</button>
+          </form>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="month-details-page">
@@ -213,7 +297,7 @@ useEffect(() => {
       <h1>
         Group {groupInfo.groupNo}: Monthly Breakdown
         {adminMode && userId && (
-          <span className="user-context"> - User: {userId}</span>
+          <span className="user-context"> - User: {firstName}</span>
         )}
       </h1>
       
@@ -306,12 +390,28 @@ useEffect(() => {
                         Pay Now
                       </button>
                     )}
+                    {/* Cash confirmation request button */}
+                    {m.paymentMethod === 'cash' && m.status === 'pending' && !adminMode && (
+                      cashRequests[m.monthName] === 'pending' ? (
+                        <div className="badge pending">Cash Confirmation Pending</div>
+                      ) : cashRequests[m.monthName] === 'approved' ? (
+                        <div className="badge approved">Cash Confirmed</div>
+                      ) : (
+                        <button
+                          className="cash-confirm-btn"
+                          onClick={() => handleCashConfirmRequest(m)}
+                          disabled={loading}
+                        >
+                          Request Cash Payment Confirmation
+                        </button>
+                      )
+                    )}
                   </div>
                 </div>
 
                 <div className="payment-details">
                   <div className="detail-row">
-                    <span className="label">Amount:</span>
+                    <span className="label">Amount to be paid:</span>
                     <span className="value">₹{amount.toLocaleString()}</span>
                   </div>
 
@@ -323,8 +423,8 @@ useEffect(() => {
                   )}
 
                   <div className="detail-row">
-                    <span className="label">Method:</span>
-                    <span className="value">{m.paymentMethod || 'N/A'}</span>
+                    <span className="label">Mode of Payment:</span>
+                    <span className="value">{m.paymentMethod || '-'}</span>
                   </div>
 
                   {m.prebookedBy && (
@@ -341,39 +441,27 @@ useEffect(() => {
       </div>
 
       {showPaymentModal && (
-        <div className="modal-overlay">
-          <div className="payment-modal">
-            <div className="modal-header">
-              <h3>Make Payment</h3>
-              <button className="close-btn" onClick={() => setShowPaymentModal(false)}>×</button>
-            </div>
-            <div className="modal-content">
-              <div className="payment-summary">
-                <p><strong>Month:</strong> {selectedMonth?.monthName}</p>
-                <p><strong>Amount:</strong> ₹{(hasPreBookedMonth === selectedMonth?.monthName
-                  ? split + (shareAmount * 0.01)
-                  : split
-                ).toLocaleString()}</p>
-              </div>
-
-              <div className="payment-method">
-                <label>Payment Method:</label>
-                <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)}>
-                  <option value="upi">UPI</option>
-                  <option value="cash">Cash</option>
-                  <option value="bank_transfer">Bank Transfer</option>
-                  <option value="cheque">Cheque</option>
-                </select>
-              </div>
-
-              <div className="modal-actions">
-                <button className="cancel-btn" onClick={() => setShowPaymentModal(false)}>Cancel</button>
-                <button className="confirm-btn" onClick={submitPayment} disabled={loading}>
-                  {loading ? 'Processing...' : 'Confirm Payment'}
-                </button>
-              </div>
-            </div>
-          </div>
+        <PaymentModal
+          onClose={() => setShowPaymentModal(false)}
+          onSubmit={submitPayment}
+          isLoading={loading}
+          defaultMethod={paymentMethod}
+        />
+      )}
+      {/* Bottom of the page: Leave Group Button */}
+      {!adminMode && months.length > 0 && months.every(m => m.status !== 'due' && m.status !== 'pending') && (
+        <div className="leave-group-section">
+          {leaveRequestStatus === 'pending' ? (
+            <div className="badge pending">Leave Group Request Pending</div>
+          ) : (
+            <button
+              className="leave-group-btn"
+              onClick={handleLeaveGroupRequest}
+              disabled={loading}
+            >
+              Request to Leave Group
+            </button>
+          )}
         </div>
       )}
     </div>

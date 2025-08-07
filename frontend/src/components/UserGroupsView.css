@@ -17,7 +17,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: rgba(170, 182, 229, 0.483);
+  background: rgba(41, 75, 211, 0.603);
   border: 1px solid rgba(200, 205, 226, 0.646);
   color: #e0e2eb;
   padding: 8px 16px;
@@ -28,7 +28,7 @@
 }
 
 .back-btn:hover {
-  background: rgba(156, 173, 246, 0.594);
+  background: rgba(20, 50, 188, 0.679);
   transform: translateX(-2px);
 }
 

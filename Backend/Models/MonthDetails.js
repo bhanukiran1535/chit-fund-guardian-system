@@ -32,4 +32,7 @@ const MonthSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
+MonthSchema.index({ groupId: 1 });
+MonthSchema.index({ userId: 1 });
+
 module.exports = mongoose.model('Month', MonthSchema);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X, Calendar, Users, DollarSign, ArrowLeft, CheckCircle, XCircle, Clock } from 'lucide-react';
 import './GroupDetailsView.css';
+import { apiFetch } from '../lib/api';
 
 export const GroupDetailsView = ({ group, onClose }) => {
   const [months, setMonths] = useState([]);
@@ -18,30 +19,24 @@ export const GroupDetailsView = ({ group, onClose }) => {
 
   const fetchGroupMonths = async () => {
     try {
-      const response = await fetch(`${API_BASE}/month/group/${group._id}`, {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const data = await apiFetch(`${API_BASE}/month/group/${group._id}`, { showToast: false });
       if (data.success) {
         setMonths(data.months || []);
       }
     } catch (error) {
-      console.error('Failed to fetch group months:', error);
+      setMonths([]);
     }
   };
 
   const fetchMonthMembers = async (monthId) => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE}/payment/month/${monthId}`, {
-        credentials: 'include'
-      });
-      const data = await response.json();
+      const data = await apiFetch(`${API_BASE}/payment/month/${monthId}`, { showToast: false });
       if (data.success) {
         setMonthMembers(data.payments || []);
       }
     } catch (error) {
-      console.error('Failed to fetch month members:', error);
+      setMonthMembers([]);
     } finally {
       setLoading(false);
     }

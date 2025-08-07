@@ -33,7 +33,6 @@ export const GroupCard = ({ group }) => {
   const handleDetailsClick = () => {
     navigate(`/user/group/${group._id}/details`, { state: { group } });
   };
-  console.log(group);
   return (
     <div className="group-card">
       <div className="card-header">
@@ -70,7 +69,7 @@ export const GroupCard = ({ group }) => {
             <Calendar className="info-icon purple" />
             <span className="info-label">Payout Month:</span>
 <span className="info-value">
-  {group.preBookedMonth ? group.preBookedMonth : 'Not Taken'}
+  {group.preBookedMonth ? group.preBookedMonth : 'Not Claimed'}
 </span>
 
           </div>

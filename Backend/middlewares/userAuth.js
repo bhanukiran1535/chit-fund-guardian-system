@@ -5,10 +5,10 @@ const securityKey = process.env.JWT_SECRET;
 const userAuth = async (req,res,next)=>{
   try{
     const token = req.cookies.token;
-    if (!token) return res.status(401).json({ success: false, message: "currently you are not logged in" });
+    if (!token) return res.status(401).json({ success: false, message: "Currently you are not logged in" });
     
     const decodedmessage = await jwt.verify(token,securityKey); // "message": "jwt must be provided" - by default this res is send if verification fails here
-    if(!decodedmessage) return res.status(404).json({ success: false, message: "please login" });
+    if(!decodedmessage) return res.status(401).json({ success: false, message: "Please login" });
     
     const { _id } = decodedmessage;
     const user = await User.findById(_id); 
@@ -17,7 +17,7 @@ const userAuth = async (req,res,next)=>{
     req.user = user;
     next();
   }catch(err){
-    return res.status(400).json({ success:false, message:err.message });
+    return res.status(500).json({ success:false, message:err.message });
     // ( throw new ERR_HTTP_HEADERS_SENT('set'); 
     // Cannot set headers after they are sent to the client)
     // It means you're trying to send a response more than once

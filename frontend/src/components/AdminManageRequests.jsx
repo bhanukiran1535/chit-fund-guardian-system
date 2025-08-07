@@ -1,23 +1,21 @@
 import { useEffect, useState } from 'react';
 import './AdminManageRequests.css';
+import { apiFetch } from '../lib/api';
 
 export const AdminManageRequests = () => {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const fetchRequests = async () => {
+    setLoading(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/request/all`, {
-        credentials: 'include',
-      });
-      const data = await res.json();
-
+      const data = await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/request/all`, { showToast: false });
       if (data.success) {
         const pending = data.requests.filter(req => req.status === 'pending' && req.type === 'join_group');
         setRequests(pending);
       }
     } catch (error) {
-      console.error('Error fetching requests:', error);
+      // error toast handled by apiFetch
     } finally {
       setLoading(false);
     }
@@ -29,64 +27,39 @@ export const AdminManageRequests = () => {
 
   const handleApprove = async (userId, amount) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/request/approve`, {
+      await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/request/approve`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ userId, amount }),
+        body: { userId, amount },
       });
-      const data = await res.json();
-      alert(data.message || 'Approved');
-      fetchRequests(); // Refresh after action
-    } catch (error) {
-      alert('Failed to approve request');
-    }
+      fetchRequests();
+    } catch (error) {}
   };
 
   const handleReject = async (userId, amount) => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/request/reject`, {
+      await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/request/reject`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ userId, amount }),
+        body: { userId, amount },
       });
-      const data = await res.json();
-      alert(data.message || 'Rejected');
       fetchRequests();
-    } catch (error) {
-      alert('Failed to reject request');
-    }
+    } catch (error) {}
   };
 
   if (loading) return <p>Loading requests...</p>;
   if (requests.length === 0) return <p>No pending requests.</p>;
 
   return (
-    <div className="request-list">
-      <h2 className="section-title">Pending Join Requests</h2>
-      {requests.map((req, index) => (
-        <div className="request-card" key={index}>
-          <p><strong>User:</strong> {req.user?.name || 'Unknown'}</p>
-          <p><strong>Amount:</strong> ₹{req.amount.toLocaleString()}</p>
-          <p><strong>Requested On:</strong> {new Date(req.createdAt).toLocaleString()}</p>
-
-          <div className="action-buttons">
-            <button
-              className="action-btn approve"
-              onClick={() => handleApprove(req.user._id, req.amount)}
-            >
-              Approve
-            </button>
-            <button
-              className="action-btn reject"
-              onClick={() => handleReject(req.user._id, req.amount)}
-            >
-              Reject
-            </button>
-          </div>
-        </div>
-      ))}
+    <div className="admin-manage-requests">
+      <h3>Pending Join Requests</h3>
+      <ul>
+        {requests.map((req) => (
+          <li key={req._id}>
+            <span>{req.userId?.firstName} ({req.userId?.email}) - Amount: ₹{req.amount}</span>
+            <button onClick={() => handleApprove(req.userId, req.amount)}>Approve</button>
+            <button onClick={() => handleReject(req.userId, req.amount)}>Reject</button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 };

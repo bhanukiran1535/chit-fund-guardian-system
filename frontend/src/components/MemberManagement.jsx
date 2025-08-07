@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Search, Filter, MoreHorizontal, UserCheck, UserX, DollarSign, Calendar, Download } from 'lucide-react';
 import './MemberManagement.css';
+import { apiFetch } from '../lib/api';
 
 export const MemberManagement = () => {
   const navigate = useNavigate();
@@ -23,24 +24,17 @@ export const MemberManagement = () => {
   }, [uniqueUsers, searchTerm, filterStatus]);
 
   const fetchData = async () => {
+    setLoading(true);
     try {
-      // Fetch all groups
-      const groupsRes = await fetch(`${API_BASE}/group/allGroups`, {
-        credentials: 'include'
-      });
-      const groupsData = await groupsRes.json();
-
+      const groupsData = await apiFetch(`${API_BASE}/group/allGroups`, { showToast: false });
       if (groupsData.success) {
         setGroups(groupsData.groups);
-        
         // Extract unique users from all groups
         const userMap = new Map();
-        
         groupsData.groups.forEach(group => {
           if (group.members && group.members.length > 0) {
             group.members.forEach(member => {
               const userId = member.userId._id;
-              
               if (!userMap.has(userId)) {
                 userMap.set(userId, {
                   userId: member.userId,
@@ -51,7 +45,6 @@ export const MemberManagement = () => {
                   groups: []
                 });
               }
-              
               const user = userMap.get(userId);
               user.totalGroups++;
               user.totalInvestment += member.shareAmount || group.chitValue;
@@ -64,17 +57,15 @@ export const MemberManagement = () => {
                 joinDate: member.joinDate,
                 role: member.role
               });
-              
               if (group.status === 'active') user.activeGroups++;
               if (group.status === 'completed') user.completedGroups++;
             });
           }
         });
-        
         setUniqueUsers(Array.from(userMap.values()));
       }
     } catch (error) {
-      console.error('Failed to fetch data:', error);
+      // error toast handled by apiFetch
     } finally {
       setLoading(false);
     }
@@ -82,8 +73,6 @@ export const MemberManagement = () => {
 
   const filterUsers = () => {
     let filtered = [...uniqueUsers];
-
-    // Search filter
     if (searchTerm) {
       filtered = filtered.filter(user =>
         user.userId.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -91,8 +80,6 @@ export const MemberManagement = () => {
         user.userId.email?.toLowerCase().includes(searchTerm.toLowerCase())
       );
     }
-
-    // Status filter (based on active groups)
     if (filterStatus !== 'all') {
       filtered = filtered.filter(user => {
         if (filterStatus === 'active') return user.activeGroups > 0;
@@ -100,63 +87,27 @@ export const MemberManagement = () => {
         return true;
       });
     }
-
     setFilteredUsers(filtered);
   };
 
   const handleMemberAction = async (memberId, action) => {
     try {
-      const response = await fetch(`${API_BASE}/group/member-action`, {
+      await apiFetch(`${API_BASE}/group/member-action`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          memberId,
-          action
-        })
+        body: { memberId, action },
       });
-
-      const data = await response.json();
-      if (data.success) {
-        // Refresh data
-        fetchData();
-        alert(`Member ${action} successfully!`);
-      } else {
-        alert(data.message || `Failed to ${action} member`);
-      }
-    } catch (error) {
-      console.error(`Failed to ${action} member:`, error);
-      alert(`Failed to ${action} member`);
-    }
+      fetchData();
+    } catch (error) {}
   };
 
   const updateShareAmount = async (memberId, newAmount) => {
     try {
-      const response = await fetch(`${API_BASE}/group/update-share`, {
+      await apiFetch(`${API_BASE}/group/update-share`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          memberId,
-          shareAmount: newAmount
-        })
+        body: { memberId, shareAmount: newAmount },
       });
-
-      const data = await response.json();
-      if (data.success) {
-        fetchData();
-        alert('Share amount updated successfully!');
-      } else {
-        alert(data.message || 'Failed to update share amount');
-      }
-    } catch (error) {
-      console.error('Failed to update share amount:', error);
-      alert('Failed to update share amount');
-    }
+      fetchData();
+    } catch (error) {}
   };
 
   const exportMemberData = () => {
@@ -187,6 +138,9 @@ export const MemberManagement = () => {
     const statusText = status.charAt(0).toUpperCase() + status.slice(1);
     return <span className={statusClass}>{statusText}</span>;
   };
+
+  if (loading) return <p>Loading members...</p>;
+  if (filteredUsers.length === 0) return <p>No members found.</p>;
 
   return (
     <div className="member-management">

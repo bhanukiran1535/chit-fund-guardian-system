@@ -109,25 +109,6 @@
   cursor: not-allowed;
 }
 
-.forgot-password-link {
-  text-align: center;
-  margin-top: 16px;
-}
-
-.link-button {
-  background: none;
-  border: none;
-  color: hsl(var(--primary));
-  cursor: pointer;
-  font-size: 0.875rem;
-  text-decoration: underline;
-  transition: color 0.2s ease;
-}
-
-.link-button:hover {
-  color: hsl(var(--primary) / 0.8);
-}
-
 .login-error {
   color: #dc2626;
   font-size: 0.875rem;
@@ -242,4 +223,25 @@
 .otp-container .form-input {
   flex: 1;
   margin-bottom: 0;
+}
+
+.forgot-password-link {
+  text-align: right;
+  margin-top: 0.5rem;
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #3b82f6; /* Tailwind's blue-500 */
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+  text-decoration: underline;
+}
+
+.link-btn:hover {
+  color: #1d4ed8; /* Tailwind's blue-700 */
+  text-decoration: none;
 }

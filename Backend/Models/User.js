@@ -23,9 +23,7 @@ const UserSchema = mongoose.Schema({
   type: String,
  },
 alias:{
-  type: String,
-  unique: true,  // ✅ unique: true means no two docs can have the same value, including null
-  sparse: true   // ✅ Allows multiple docs with null/undefined
+  type: String // ✅ Allows multiple docs with null/undefined
  },
  email:{
   type: String,
@@ -69,6 +67,10 @@ UserSchema.pre('save', async function (next) {
   }
   next();
 });
+
+UserSchema.index({ email: 1 }, { unique: true });
+UserSchema.index({ alias: 1 }, { unique: true, sparse: true });
+UserSchema.index({ isAdmin: 1 });
 
 const UserModel = new mongoose.model('User',UserSchema);
 module.exports = UserModel;

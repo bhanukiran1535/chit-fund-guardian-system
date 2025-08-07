@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const MongoDB_Connection_String = "mongodb+srv://bhanukiran1535:mschitswebsitedbpass@websitecluster.zrsvzq7.mongodb.net/MSWebsiteDB?retryWrites=true&w=majority&appName=WebsiteCluster";
+const MongoDB_Connection_String = process.env.MONGODB_URI; // Set this in your .env file
 
 const ConnectDB = async () => {
   try {
