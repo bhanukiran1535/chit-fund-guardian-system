@@ -11,8 +11,8 @@ const PaymentRouter = require('./Routes/payment');
 
 let app = express();
 app.use(cors({
-  origin: 'http://localhost:8080', // allow your frontend origin
-  credentials: true               // allow cookies if you're using them
+  origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173', // Vite default port
+  credentials: true
 }));
 app.use(express.json());  // to parse JSON body
 app.use(cookieParser());
@@ -22,4 +22,9 @@ app.use('/group',groupRoute);
 app.use('/month', monthRoute);
 app.use('/request', requestRoute);
 app.use('/payment', PaymentRouter);
-app.listen(3000);
+const PORT = process.env.PORT || 3000;
+const HOST = process.env.NODE_ENV === 'production' ? '0.0.0.0' : 'localhost';
+
+app.listen(PORT, HOST, () => {
+  console.log(`Server running on ${HOST}:${PORT}`);
+});

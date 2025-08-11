@@ -50,16 +50,16 @@ userRoute.post('/verify-otp',
   const otpEntry = await Otp.findOne({ email });
 
   if (!otpEntry) {
-    return res.status(400).json({ message: 'OTP not found' });
+    return res.status(400).json({ success: false, message: 'OTP not found' });
   }
 
   if (otpEntry.otp !== otp) {
-    return res.status(400).json({ message: 'Invalid OTP' });
+    return res.status(400).json({ success: false, message: 'Invalid OTP' });
   }
 
   if (otpEntry.expiry < Date.now()) {
     await Otp.deleteOne({ email });
-    return res.status(400).json({ message: 'OTP expired' });
+    return res.status(400).json({ success: false, message: 'OTP expired' });
   }
   
   await Otp.deleteOne({ email }); // Clean up

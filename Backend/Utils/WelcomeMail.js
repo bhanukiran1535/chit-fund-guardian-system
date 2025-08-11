@@ -39,7 +39,3 @@ Reply to this email or contact us at: support@mschitfund.com`,
 }
 
 module.exports = { welcomeMail };
-
-
-
-

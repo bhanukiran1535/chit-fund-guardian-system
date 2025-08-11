@@ -35,6 +35,9 @@ foremanCommission:{
 }, { timestamps: true })
 GroupSchema.index({ groupNo: 1 }, { unique: true });
 GroupSchema.index({ 'members.userId': 1 });
+GroupSchema.index({ startMonth: 1 });
+GroupSchema.index({ chitValue: 1 });
+GroupSchema.index({ startMonth: 1, chitValue: 1 }); // Compound index for common queries
 const GroupModel = mongoose.model('Group',GroupSchema);
 module.exports = GroupModel;
 
