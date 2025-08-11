@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
 import { UserDashboard } from '../components/UserDashboard';
 import { AdminDashboard } from '../components/AdminDashboard';
 import { LoginForm } from '../components/LoginForm';
 import { Header } from '../components/Header';
 import './Index.css';
-import { AuthProvider, useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
-const IndexContent = () => {
+const Index = () => {
   const { user, login, logout, loading } = useAuth();
+  
   if (loading) {
     return (
       <div className="loading-container">
@@ -15,9 +15,11 @@ const IndexContent = () => {
       </div>
     );
   }
+  
   if (!user) {
     return <LoginForm onLogin={login} />;
   }
+  
   return (
     <div className="app-container">
       <Header user={user} onLogout={logout} />
@@ -31,11 +33,5 @@ const IndexContent = () => {
     </div>
   );
 };
-
-const Index = () => (
-  <AuthProvider>
-    <IndexContent />
-  </AuthProvider>
-);
 
 export default Index;

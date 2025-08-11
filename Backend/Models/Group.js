@@ -33,11 +33,14 @@ foremanCommission:{
     required: true
 }
 }, { timestamps: true })
+// Optimized indexes for better performance
 GroupSchema.index({ groupNo: 1 }, { unique: true });
 GroupSchema.index({ 'members.userId': 1 });
 GroupSchema.index({ startMonth: 1 });
 GroupSchema.index({ chitValue: 1 });
 GroupSchema.index({ startMonth: 1, chitValue: 1 }); // Compound index for common queries
+GroupSchema.index({ 'members.status': 1 }); // Index for member status queries
+GroupSchema.index({ createdAt: -1 }); // Index for sorting by creation date
 const GroupModel = mongoose.model('Group',GroupSchema);
 module.exports = GroupModel;
 

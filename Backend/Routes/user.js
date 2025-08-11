@@ -8,6 +8,7 @@ const adminAuth = require('../middlewares/adminAuth');
 const {sendOTP} = require('../Utils/OTPsender');
 const { welcomeMail } = require('../Utils/WelcomeMail');
 const { body, validationResult } = require('express-validator');
+const { authLimiter, otpLimiter } = require('../middlewares/rateLimiter');
 
 userRoute.post('/create',
   [
@@ -71,6 +72,7 @@ userRoute.post('/verify-otp',
 
 // send OTP route
 userRoute.post('/send-otp',
+  otpLimiter,
   [body('email').isEmail().withMessage('Invalid email')],
   async (req, res) => {
     const errors = validationResult(req);
@@ -127,6 +129,7 @@ userRoute.get('/me', userAuth, async (req, res) => {
 });
 
 userRoute.post('/login',
+  authLimiter,
   [
     body('email').isEmail().withMessage('Invalid email'),
     body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters'),

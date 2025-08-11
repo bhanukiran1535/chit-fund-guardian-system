@@ -1,29 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Users, Search, Filter, MoreHorizontal, UserCheck, UserX, DollarSign, Calendar, Download } from 'lucide-react';
 import './MemberManagement.css';
 import { apiFetch } from '../lib/api';
+import { useDebounce } from '../hooks/useDebounce';
+import { LoadingSpinner } from './LoadingSpinner';
 
 export const MemberManagement = () => {
   const navigate = useNavigate();
   const [uniqueUsers, setUniqueUsers] = useState([]);
-  const [filteredUsers, setFilteredUsers] = useState([]);
+  
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [groups, setGroups] = useState([]);
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    filterUsers();
-  }, [uniqueUsers, searchTerm, filterStatus]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const groupsData = await apiFetch(`${API_BASE}/group/allGroups`, { showToast: false });
@@ -69,15 +64,15 @@ export const MemberManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [API_BASE]);
 
-  const filterUsers = () => {
+  const filteredUsers = useMemo(() => {
     let filtered = [...uniqueUsers];
-    if (searchTerm) {
+    if (debouncedSearchTerm) {
       filtered = filtered.filter(user =>
-        user.userId.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.userId.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.userId.email?.toLowerCase().includes(searchTerm.toLowerCase())
+        user.userId.firstName?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        user.userId.lastName?.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) ||
+        user.userId.email?.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
       );
     }
     if (filterStatus !== 'all') {
@@ -87,8 +82,12 @@ export const MemberManagement = () => {
         return true;
       });
     }
-    setFilteredUsers(filtered);
-  };
+    return filtered;
+  }, [uniqueUsers, debouncedSearchTerm, filterStatus]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleMemberAction = async (memberId, action) => {
     try {
@@ -139,8 +138,7 @@ export const MemberManagement = () => {
     return <span className={statusClass}>{statusText}</span>;
   };
 
-  if (loading) return <p>Loading members...</p>;
-  if (filteredUsers.length === 0) return <p>No members found.</p>;
+  if (loading) return <LoadingSpinner size="lg" text="Loading members..." />;
 
   return (
     <div className="member-management">

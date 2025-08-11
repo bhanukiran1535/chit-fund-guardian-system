@@ -1,6 +1,7 @@
 require('dotenv').config({debug:false});
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const ConnectDB = require("./config/mongoose");
 const userRoute = require('./Routes/user');
 const groupRoute = require('./Routes/group')
@@ -8,14 +9,34 @@ const monthRoute = require('./Routes/month')
 const requestRoute = require('./Routes/request')
 const cookieParser = require('cookie-parser');
 const PaymentRouter = require('./Routes/payment');
+const { generalLimiter } = require('./middlewares/rateLimiter');
+const sanitizeInput = require('./middlewares/inputSanitizer');
 
 let app = express();
-app.use(cors({
-  origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173', // Vite default port
-  credentials: true
+
+// Security middleware
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      scriptSrc: ["'self'"],
+      imgSrc: ["'self'", "data:", "https:"],
+    },
+  },
 }));
-app.use(express.json());  // to parse JSON body
+
+app.use(cors({
+  origin: process.env.FRONTEND_ORIGIN || 'http://localhost:5173',
+  credentials: true,
+  optionsSuccessStatus: 200
+}));
+
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
+app.use(generalLimiter);
+app.use(sanitizeInput);
 ConnectDB();
 app.use('/user',userRoute);
 app.use('/group',groupRoute);

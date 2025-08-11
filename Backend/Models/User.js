@@ -44,7 +44,25 @@ alias:{
  }
 })
 UserSchema.methods.getJWT = async function () {   // we can't use 'this' key word in arrow function
-    const token = await jwt.sign({_id:this._id}, SECRET_KEY, { expiresIn: "1h" });
+    const token = await jwt.sign({_id:this._id}, SECRET_KEY, { expiresIn: "15m" }); // Shorter lived access token
+    return token;
+};
+
+UserSchema.methods.getRefreshToken = async function () {
+    const crypto = require('crypto');
+    const RefreshToken = require('./RefreshToken');
+    
+    // Generate secure random token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+    
+    // Store in database
+    await RefreshToken.create({
+        userId: this._id,
+        token,
+        expiresAt
+    });
+    
     return token;
 };
 UserSchema.methods.compareHash = async function (passwordInputedbyUser) {   // we can't use 'this' key word in arrow function
@@ -52,7 +70,7 @@ UserSchema.methods.compareHash = async function (passwordInputedbyUser) {   // w
   return isPasswordValid;
 };
 UserSchema.methods.createpasswordHash = async function (newPassword) {   // we can't use 'this' key word in arrow function
-  const passwordHash =await bcrypt.hash(newPassword,10);
+  const passwordHash = await bcrypt.hash(newPassword, 12); // Increased salt rounds for better security
   return passwordHash;
 };
 
