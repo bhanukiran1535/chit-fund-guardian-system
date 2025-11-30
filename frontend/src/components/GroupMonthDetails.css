@@ -2,7 +2,9 @@
   padding: 2rem 1rem;
   max-width: 900px;
   margin: 0 auto;
-  @apply bg-gradient-primary min-h-screen text-primary-foreground;
+  min-height: 100vh;
+  color: hsl(var(--foreground));
+  background-image: var(--gradient-primary);
 }
 
 .page-header {
