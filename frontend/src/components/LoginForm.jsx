@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Shield } from 'lucide-react';
+import { motion } from 'framer-motion';
 import './LoginForm.css';
 import { apiFetch } from '../lib/api';
 import { ForgotPasswordModal } from './ForgotPasswordModal';
+import { HeroGeometric } from './ui/shape-landing-hero';
 
 export const LoginForm = ({ onLogin }) => {
   const [email, setEmail] = useState('');
@@ -144,8 +146,24 @@ export const LoginForm = ({ onLogin }) => {
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
+    <div className="login-container-modern">
+      {/* Hero Section - Left Side */}
+      <div className="hero-section">
+        <HeroGeometric 
+          badge="MS ChitFund"
+          title1="Secure Your"
+          title2="Financial Future"
+        />
+      </div>
+
+      {/* Form Section - Right Side */}
+      <div className="form-section">
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6 }}
+          className="login-card-modern"
+        >
         <div className="login-header">
           <div className="logo-container">
             <Shield className="logo-icon" />
@@ -337,6 +355,7 @@ export const LoginForm = ({ onLogin }) => {
 
         {error && <p className="login-error">{error}</p>}
         {success && <p className="login-success">{success}</p>}
+        </motion.div>
       </div>
     </div>
   );
