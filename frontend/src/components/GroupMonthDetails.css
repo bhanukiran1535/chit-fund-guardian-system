@@ -43,7 +43,10 @@ h1 {
 
 /* Progress Section */
 .progress-section {
-  @apply bg-card/10 p-6 rounded-lg mb-8;
+  background-color: hsl(var(--card) / 0.1);
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  margin-bottom: 2rem;
   backdrop-filter: blur(10px);
 }
 .progress-section span{
