@@ -13,11 +13,19 @@ export async function apiFetch(url, { method = 'GET', body, headers = {}, showTo
       body: body ? JSON.stringify(body) : undefined,
     });
     const data = await res.json().catch(() => ({}));
+
     if (!res.ok) {
+      if (res.status === 401) {
+        // Not authenticated is valid for /user/me; return null so auth context can treat as logged out.
+        return null;
+      }
       if (showToast) toast.error(data.message || 'Something went wrong');
-      throw new Error(data.message || 'API error');
+      const error = new Error(data?.message || 'API error');
+      error.status = res.status;
+      throw error;
     }
-    if (showToast && data.message) toast.success(data.message);
+
+    if (showToast && data?.message) toast.success(data.message);
     return data;
   } catch (err) {
     if (showToast) toast.error(err.message || 'Network error');

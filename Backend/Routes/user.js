@@ -108,23 +108,33 @@ userRoute.post('/send-otp',
   res.json({ success: true, message: 'OTP sent to email' });
 });
 
-userRoute.get('/me', userAuth, async (req, res) => {
+userRoute.get('/me', async (req, res) => {
+  const token = req.cookies?.token;
+  if (!token) {
+    return res.status(200).json({ success: true, user: null });
+  }
+
   try {
-    const user = await User.findById(req.user._id).select('-password');
+    const jwt = require('jsonwebtoken');
+    const decoded = await jwt.verify(token, process.env.JWT_SECRET);
+
+    const user = await User.findById(decoded._id).select('-password');
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(200).json({ success: true, user: null });
     }
-    res.json({
+
+    return res.status(200).json({
       success: true,
       user: {
         id: user._id,
         email: user.email,
         firstName: user.firstName,
-        isAdmin: user.isAdmin
+        isAdmin: user.isAdmin,
       }
     });
   } catch (err) {
-    res.status(401).json({ success: false, message: "Unauthorized" });
+    // Token invalid/expired: consider logged out, not a hard API error
+    return res.status(200).json({ success: true, user: null });
   }
 });
 

@@ -8,19 +8,34 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchUser() {
-      setLoading(true);
-      try {
-        const data = await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/me`, { showToast: false });
-        setUser(data.user);
-      } catch {
-        setUser(null);
-      } finally {
-        setLoading(false);
+      async function fetchUser() {
+        setLoading(true);
+
+        try {
+          const data = await apiFetch(
+            `${import.meta.env.VITE_API_BASE_URL}/user/me`,
+            { showToast: false }
+          );
+
+          if (data?.user) {
+            setUser(data.user);
+          } else {
+            setUser(null); // not logged in, normal for first load
+          }
+
+        } catch (err) {
+          // Keep 401/unauthenticated silent in console to avoid noisy dev output.
+          if (err.status && err.status !== 401) {
+            console.error("Auth error:", err);
+          }
+          setUser(null);
+        } finally {
+          setLoading(false);
+        }
       }
-    }
-    fetchUser();
-  }, []);
+
+      fetchUser();
+    }, []);
 
   const login = (userData) => setUser(userData);
   const logout = async () => {

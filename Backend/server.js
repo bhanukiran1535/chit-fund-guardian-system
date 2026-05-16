@@ -25,20 +25,31 @@ app.use(helmet({
     },
   },
 }));
-
+// CORS = “Which FRONTEND origins are allowed to call my BACKEND?”
 const allowedOrigins = [
-  'http://localhost:5173',
   'http://localhost:8080',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:8080',
   process.env.FRONTEND_ORIGIN
 ].filter(Boolean);
+
+const isLocalNetworkOrigin = origin => {
+  if (!origin) return false;
+  try {
+    const url = new URL(origin);
+    const host = url.hostname;
+
+    if (host === 'localhost' || host === '127.0.0.1') return true;
+    if (/^172\.(16|17|18|19|20)\.[0-9]{1,3}\.[0-9]{1,3}$/.test(host)) return true;
+    return false;
+  } catch (err) {
+    return false;
+  }
+};
 
 app.use(cors({
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) {
+    if (allowedOrigins.includes(origin) || (process.env.NODE_ENV !== 'production' && isLocalNetworkOrigin(origin))) {
       return callback(null, true);
     }
     return callback(new Error('Not allowed by CORS'));
@@ -47,9 +58,9 @@ app.use(cors({
   optionsSuccessStatus: 200
 }));
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(generalLimiter);
 app.use(sanitizeInput);
 ConnectDB();

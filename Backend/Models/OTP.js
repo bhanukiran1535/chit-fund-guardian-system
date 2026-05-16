@@ -6,4 +6,8 @@ const otpSchema = new mongoose.Schema({
   expiry: { type: Date, required: true },
 });
 
+// Indexes for OTP lookups and automatic expiry cleanup
+otpSchema.index({ email: 1 });
+otpSchema.index({ expiry: 1 }, { expireAfterSeconds: 0 }); // TTL index for auto-deletion
+
 module.exports = mongoose.model('Otp', otpSchema);

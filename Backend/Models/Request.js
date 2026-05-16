@@ -24,4 +24,10 @@ const RequestSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now }
 });
 
+// Optimized indexes for better query performance
+RequestSchema.index({ userId: 1, status: 1 });
+RequestSchema.index({ groupId: 1, status: 1 });
+RequestSchema.index({ type: 1, status: 1 });
+RequestSchema.index({ createdAt: -1 });
+
 module.exports = mongoose.model('Request', RequestSchema);

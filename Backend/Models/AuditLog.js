@@ -8,4 +8,10 @@ const AuditLogSchema = new mongoose.Schema({
   timestamp: { type: Date, default: Date.now }
 });
 
+// Optimized indexes for audit trail queries
+AuditLogSchema.index({ performedBy: 1, timestamp: -1 });
+AuditLogSchema.index({ action: 1, timestamp: -1 });
+AuditLogSchema.index({ targetId: 1 });
+AuditLogSchema.index({ timestamp: -1 });
+
 module.exports = mongoose.model('AuditLog', AuditLogSchema); 

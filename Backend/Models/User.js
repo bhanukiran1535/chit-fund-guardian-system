@@ -38,6 +38,10 @@ alias:{
   type: String,
   required: true,
  },
+ // Added for future role-based access control (RBAC) implementation
+ // Added isAdmin field for all the Users, When we just had 2 or 3 Admin Accounts ?? 
+ // I don’t optimize for storage
+ // I optimize for query efficiency and simplicity
  isAdmin:{
   type: Boolean,
   default: false
@@ -87,8 +91,8 @@ UserSchema.pre('save', async function (next) {
 });
 
 UserSchema.index({ email: 1 }, { unique: true });
-UserSchema.index({ alias: 1 }, { unique: true, sparse: true });
-UserSchema.index({ isAdmin: 1 });
+// UserSchema.index({ alias: 1 }, { unique: true, sparse: true });
+// UserSchema.index({ isAdmin: 1 });
 
 const UserModel = new mongoose.model('User',UserSchema);
 module.exports = UserModel;
