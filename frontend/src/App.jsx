@@ -5,6 +5,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Index from "./pages/Index";
+import Landing from "./pages/Landing";
+import Login from "./pages/Login";
+import SignUp from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
 import { GroupMonthDetails } from "./components/GroupMonthDetails";
 import { GroupMonthManagement } from "./components/GroupMonthManagement";
@@ -32,6 +35,9 @@ const App = () => {
             <div className="min-h-screen bg-background">
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/landing" element={<Landing />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<SignUp />} />
                 <Route path="/user/group/:groupId/details" element={<GroupMonthDetails />} />
                 <Route path="/admin/group/:groupId/manage" element={<GroupMonthManagement />} />
                 <Route path="/admin/user/:userId/groups" element={<UserGroupsView />} />

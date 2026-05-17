@@ -1,7 +1,7 @@
 import { UserDashboard } from '../components/UserDashboard';
 import { AdminDashboard } from '../components/AdminDashboard';
-import { LoginForm } from '../components/LoginForm';
 import { Header } from '../components/Header';
+import Landing from './Landing';
 import './Index.css';
 import { useAuth } from '../context/AuthContext';
 
@@ -15,9 +15,10 @@ const Index = () => {
       </div>
     );
   }
-  
+
+  // Show landing page if user is not authenticated
   if (!user) {
-    return <LoginForm onLogin={login} />;
+    return <Landing />;
   }
   
   return (
