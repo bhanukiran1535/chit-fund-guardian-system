@@ -554,7 +554,8 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
               </button>
             )}
           </div>
-        )}
+          );
+        })()}
       </div>
 
       {showPaymentModal && (
