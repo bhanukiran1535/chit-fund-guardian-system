@@ -56,7 +56,7 @@ export const GroupCard = ({ group }) => {
         }`}
     >
       {/* COMPLETED stamp overlay */}
-      {isCompleted && <CompletedStamp id={group._id || group.groupNo} />}
+      {isCompleted && <CompletedRibbon />}
 
       <div className="px-5 pt-5 pb-4 border-b border-gray-100">
         <div className="flex items-start justify-between">
