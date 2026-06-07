@@ -137,21 +137,19 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
     setLoading(true);
     try {
       if (data.paymentMethod === 'cash' && !adminMode) {
+        if (cashRequests[selectedMonth.monthName] === 'pending') {
+          toast.error('A cash payment request for this month is already pending.');
+          setShowPaymentModal(false);
+          setLoading(false);
+          return;
+        }
         await apiFetch(`${API}/request/payment`, {
           method: 'POST',
           body: { groupId, monthName: selectedMonth.monthName, amount: calculateAmount(selectedMonth.monthName, split, hasPreBookedMonth) },
         });
         setShowPaymentModal(false);
         toast.success('Cash payment confirmation request sent!');
-        const res = await fetch(`${API}/request/my`, { credentials: 'include' });
-        const dataReq = await res.json();
-        if (dataReq.success) {
-          const cashReqs = {};
-          dataReq.requests.forEach(r => {
-            if (r.type === 'confirm_cash_payment' && r.groupId._id === groupId) cashReqs[r.monthName] = r.status;
-          });
-          setCashRequests(cashReqs);
-        }
+        setCashRequests(prev => ({ ...prev, [selectedMonth.monthName]: 'pending' }));
       } else {
         await apiFetch(`${API}/payment/make`, {
           method: 'POST',
@@ -167,6 +165,10 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
   };
 
   const handleCashConfirmRequest = async (month) => {
+    if (cashRequests[month.monthName] === 'pending') {
+      toast.error('A cash payment request for this month is already pending.');
+      return;
+    }
     setLoading(true);
     try {
       await apiFetch(`${API}/request/payment`, {
@@ -174,15 +176,7 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
         body: { groupId, monthName: month.monthName, amount: calculateAmount(month.monthName, split, hasPreBookedMonth) },
       });
       toast.success('Cash payment confirmation request sent!');
-      const res = await fetch(`${API}/request/my`, { credentials: 'include' });
-      const data = await res.json();
-      if (data.success) {
-        const cashReqs = {};
-        data.requests.forEach(r => {
-          if (r.type === 'confirm_cash_payment' && r.groupId._id === groupId) cashReqs[r.monthName] = r.status;
-        });
-        setCashRequests(cashReqs);
-      }
+      setCashRequests(prev => ({ ...prev, [month.monthName]: 'pending' }));
     } catch (err) {
       toast.error('Failed to send cash payment confirmation request.');
     }
