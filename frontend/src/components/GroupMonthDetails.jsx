@@ -124,7 +124,14 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
     return curIndex >= preIndex ? base + base * 0.2 : base;
   };
 
-  const handlePayNow = (month) => { setSelectedMonth(month); setShowPaymentModal(true); };
+  const handlePayNow = (month) => {
+    if (cashRequests[month.monthName] === 'pending') {
+      toast.error('A cash payment request for this month is already pending.');
+      return;
+    }
+    setSelectedMonth(month);
+    setShowPaymentModal(true);
+  };
 
   const submitPayment = async (data) => {
     setLoading(true);
