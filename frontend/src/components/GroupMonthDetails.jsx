@@ -529,7 +529,18 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
         </div>
 
         {/* Leave group */}
-        {!adminMode && months.length > 0 && months.every(m => m.status !== 'due' && m.status !== 'pending') && (
+        {(() => {
+          if (adminMode || months.length === 0) return null;
+          const hasOpenDues = months.some(m => m.status === 'due' || m.status === 'pending');
+          if (hasOpenDues) return null;
+          // Group is completed when its tenure window has fully elapsed
+          const isCompleted = groupInfo && (() => {
+            const end = new Date(groupInfo.startMonth);
+            end.setMonth(end.getMonth() + (groupInfo.tenure || 0));
+            return end <= new Date();
+          })();
+          if (isCompleted) return null;
+          return (
           <div className="flex justify-end pt-2">
             {leaveRequestStatus === 'pending' ? (
               <span className="text-[13px] text-amber-600 font-semibold">Leave request pending…</span>
