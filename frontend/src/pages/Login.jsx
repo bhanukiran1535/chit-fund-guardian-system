@@ -23,12 +23,14 @@ const Login = () => {
     setError('');
     setSuccess('');
     try {
-      const data = await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/login`, {
+      await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/login`, {
         method: 'POST',
         body: { email, password },
         showToast: false
       });
-      login({ id: data.user._id, email: data.user.email, isAdmin: data.user.isAdmin, token: data.token });
+      // Fetch full profile so name/lastName are available immediately
+      const me = await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/me`, { showToast: false });
+      if (me?.user) login(me.user);
       navigate('/');
     } catch (err) {
       setError(err.message);
