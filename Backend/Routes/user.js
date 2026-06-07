@@ -129,12 +129,89 @@ userRoute.get('/me', async (req, res) => {
         id: user._id,
         email: user.email,
         firstName: user.firstName,
+        lastName: user.lastName,
+        alias: user.alias,
+        phoneNo: user.phoneNo,
         isAdmin: user.isAdmin,
+        notificationPreferences: user.notificationPreferences || { emailUpdates: true, appAlerts: true },
       }
     });
   } catch (err) {
     // Token invalid/expired: consider logged out, not a hard API error
     return res.status(200).json({ success: true, user: null });
+  }
+});
+
+userRoute.put('/settings', userAuth, async (req, res) => {
+  const { notificationPreferences } = req.body;
+
+  if (!notificationPreferences || typeof notificationPreferences !== 'object') {
+    return res.status(400).json({ success: false, message: 'Notification preferences are required' });
+  }
+
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    user.notificationPreferences = {
+      emailUpdates: typeof notificationPreferences.emailUpdates === 'boolean'
+        ? notificationPreferences.emailUpdates
+        : user.notificationPreferences?.emailUpdates ?? true,
+      appAlerts: typeof notificationPreferences.appAlerts === 'boolean'
+        ? notificationPreferences.appAlerts
+        : user.notificationPreferences?.appAlerts ?? true,
+    };
+
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Notification settings updated successfully',
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        alias: user.alias,
+        phoneNo: user.phoneNo,
+        isAdmin: user.isAdmin,
+        notificationPreferences: user.notificationPreferences,
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+userRoute.put('/admin/:userId/alias', userAuth, adminAuth, async (req, res) => {
+  const { userId } = req.params;
+  const { alias } = req.body;
+
+  if (typeof alias !== 'string') {
+    return res.status(400).json({ success: false, message: 'Alias must be a string' });
+  }
+
+  try {
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    user.alias = alias.trim();
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: 'Member alias updated successfully',
+      user: {
+        id: user._id,
+        alias: user.alias,
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 
@@ -194,8 +271,10 @@ userRoute.get('/viewProfile',userAuth, async (req,res)=>{
         id: info.userId,
         firstName: info.firstName,
         lastName: info.lastName,
+        alias: info.alias,
         email: info.email,
         phoneNo: info.phoneNo,
+        notificationPreferences: info.notificationPreferences || { emailUpdates: true, appAlerts: true },
       }});
   }catch(err){
     res.status(400).json({ success: false, message: err.message });

@@ -1,25 +1,43 @@
 # Backend - Chit Fund Guardian System
 
-## Security & Environment Setup
+## Local setup
 
-1. **Environment Variables**
-   - Copy `.env.example` to `.env` and fill in your secrets:
+1. Copy `backend/.env.example` to `backend/.env`.
+2. Fill in your backend secrets.
+3. Install backend dependencies:
 
+```bash
+cd backend
+npm install
 ```
+
+4. Start the backend locally:
+
+```bash
+npm run dev
+```
+
+## Production deployment
+
+Deploy the backend to a Node hosting provider.
+
+Set the following environment variables in the host dashboard:
+
+```text
 MONGODB_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-MAIL_USER=your_gmail_address
-MAIL_PASS=your_gmail_app_password
-FRONTEND_ORIGIN=http://localhost:8080
+JWT_SECRET=your_jwt_secret_at_least_32_characters
+MAIL_USER=your_email_address
+MAIL_PASS=your_email_password_or_app_password
+PORT=3000
+FRONTEND_ORIGIN=https://your-frontend-domain.com
+NODE_ENV=production
 ```
 
-2. **Security Features**
-   - HTTP security headers via `helmet`
-   - CSRF protection via `csurf`
-   - Rate limiting on auth endpoints
-   - Input validation and sanitization via `express-validator`
-   - Sensitive data never sent in API responses
+- `FRONTEND_ORIGIN` must match the deployed frontend URL so backend CORS allows browser requests.
+- `PORT` is usually provided by the host and should be used by the app.
+- `JWT_SECRET` must be kept secret.
 
-3. **Best Practices**
-   - Never commit your `.env` file or secrets to version control.
-   - Always use HTTPS in production. 
+## Notes
+
+- Do not commit `.env` files or secrets to git.
+- The backend should be deployed separately from the frontend in this architecture.

@@ -1,73 +1,46 @@
-# Welcome to your Lovable project
+# Frontend - Chit Fund Guardian System
 
-## Project info
+## Local setup
 
-**URL**: https://lovable.dev/projects/6f816946-64cc-43ee-bc83-7b51dddb8504
+Install frontend dependencies and start the dev server:
 
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/6f816946-64cc-43ee-bc83-7b51dddb8504) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+```bash
+cd frontend
+npm install
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## Production build
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Build the static site:
 
-**Use GitHub Codespaces**
+```bash
+cd frontend
+npm run build
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+The generated static site is available in `frontend/dist`.
 
-## What technologies are used for this project?
+## Environment variables
 
-This project is built with:
+Copy `frontend/.env.example` to `frontend/.env` for local development.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+For production, set these environment variables in your hosting platform:
 
-## How can I deploy this project?
+```text
+VITE_API_BASE_URL=https://api.your-backend-domain.com
+VITE_APP_NAME=Chit Fund Guardian
+VITE_NODE_ENV=production
+```
 
-Simply open [Lovable](https://lovable.dev/projects/6f816946-64cc-43ee-bc83-7b51dddb8504) and click on Share -> Publish.
+## Separate deployment approach
 
-## Can I connect a custom domain to my Lovable project?
+- Deploy `frontend/dist` to a static host such as Vercel, Netlify, Cloudflare Pages, or S3 + CloudFront.
+- Set `VITE_API_BASE_URL` to your deployed backend API URL.
+- Ensure your backend is deployed separately and allows CORS from `FRONTEND_ORIGIN`.
 
-Yes, you can!
+## Notes
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- Do not commit `.env` files.
+- `frontend/dist` is the build artifact to deploy.
+- Backend API calls are routed via `VITE_API_BASE_URL`.

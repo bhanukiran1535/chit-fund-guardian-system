@@ -1,12 +1,16 @@
 
 .notifications-card {
   background: white;
-  border-radius: 0.5rem;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-radius: 1rem;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e5e7eb;
+  width: 100%;
+  max-width: 960px;
+  margin: 0 auto;
 }
 
 .card-header {
-  padding: 1.5rem;
+  padding: 1.5rem 1.75rem;
   border-bottom: 1px solid #e5e7eb;
 }
 
@@ -36,20 +40,16 @@
 }
 
 .card-content {
-  padding: 1.5rem;
+  padding: 1.5rem 1.75rem 2rem;
+  display: grid;
+  gap: 1.5rem;
 }
 
 .empty-state {
   text-align: center;
   padding: 2rem;
   color: #6b7280;
-}
-
-.empty-icon {
-  width: 3rem;
-  height: 3rem;
-  margin: 0 auto 1rem;
-  color: #d1d5db;
+  font-size: 0.95rem;
 }
 
 .notifications-list {
@@ -58,23 +58,66 @@
   gap: 1rem;
 }
 
+.notification-section {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.notification-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #111827;
+}
+
+.notification-section-count {
+  background: #eff6ff;
+  color: #1d4ed8;
+  padding: 0.3rem 0.7rem;
+  border-radius: 9999px;
+  font-size: 0.85rem;
+}
+
+.notifications-group {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
 .notification-item {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
   padding: 1rem;
   border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
-  transition: background-color 0.2s;
+  border-radius: 0.9rem;
+  background: #ffffff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .notification-item:hover {
-  background-color: #f9fafb;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.notification-badge-wrapper {
+  flex-shrink: 0;
+  width: 3rem;
+  height: 3rem;
+  display: grid;
+  place-items: center;
+  border-radius: 1rem;
+  background: #f8fafc;
 }
 
 .notification-icon {
-  flex-shrink: 0;
-  margin-top: 0.25rem;
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .type-icon {
@@ -96,7 +139,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.25rem;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.notification-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #111827;
 }
 
 .notification-title {
@@ -177,4 +227,33 @@
 
 .view-btn:hover {
   background-color: #f9fafb;
+}
+
+.notification-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+  color: #4b5563;
+}
+
+.notification-meta span {
+  background: #f8fafc;
+  padding: 0.35rem 0.65rem;
+  border-radius: 9999px;
+}
+
+@media (max-width: 720px) {
+  .card-content {
+    padding: 1.25rem;
+  }
+
+  .notification-item {
+    flex-direction: column;
+  }
+
+  .notification-section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }

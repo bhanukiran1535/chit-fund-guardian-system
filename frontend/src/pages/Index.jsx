@@ -1,38 +1,27 @@
 import { UserDashboard } from '../components/UserDashboard';
 import { AdminDashboard } from '../components/AdminDashboard';
-import { Header } from '../components/Header';
 import Landing from './Landing';
-import './Index.css';
 import { useAuth } from '../context/AuthContext';
 
 const Index = () => {
-  const { user, login, logout, loading } = useAuth();
-  
+  const { user, loading } = useAuth();
+
   if (loading) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
+      <div className="flex items-center justify-center h-screen bg-[#f7f8fa]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-7 h-7 rounded bg-indigo-600 flex items-center justify-center text-white text-[11px] font-black tracking-tight">
+            MS
+          </div>
+          <div className="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+        </div>
       </div>
     );
   }
 
-  // Show landing page if user is not authenticated
-  if (!user) {
-    return <Landing />;
-  }
-  
-  return (
-    <div className="app-container">
-      <Header user={user} onLogout={logout} />
-      <main className="main-content">
-        {user.isAdmin ? (
-          <AdminDashboard user={user} />
-        ) : (
-          <UserDashboard user={user} />
-        )}
-      </main>
-    </div>
-  );
+  if (!user) return <Landing />;
+
+  return user.isAdmin ? <AdminDashboard user={user} /> : <UserDashboard user={user} />;
 };
 
 export default Index;

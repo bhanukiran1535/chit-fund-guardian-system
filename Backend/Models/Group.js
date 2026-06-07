@@ -31,7 +31,9 @@ const GroupSchema = new mongoose.Schema({
 foremanCommission:{
     type: Number,  // % percentage
     required: true
-}
+},
+bannerEnabled: { type: Boolean, default: false },
+bannerTagline: { type: String, default: '' },
 }, { timestamps: true })
 
 // Optimized indexes for better performance
@@ -49,4 +51,4 @@ const GroupModel = mongoose.model('Group',GroupSchema);
 module.exports = GroupModel;
 
 //Bid amount / Auction amount
-// Foreman's commission	Fee taken by the organizer (usually 5%)
+// Foreman's commission Fee taken by the organizer (usually 5%)

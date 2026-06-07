@@ -38,13 +38,15 @@ export function AuthProvider({ children }) {
     }, []);
 
   const login = (userData) => setUser(userData);
+  const updateUser = (newData) => setUser(prev => (prev ? { ...prev, ...newData } : newData));
+
   const logout = async () => {
     await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/logout`, { method: 'GET', showToast: false });
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, loading }}>
+    <AuthContext.Provider value={{ user, login, logout, updateUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

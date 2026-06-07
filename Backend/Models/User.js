@@ -38,6 +38,10 @@ alias:{
   type: String,
   required: true,
  },
+ notificationPreferences: {
+  emailUpdates: { type: Boolean, default: true },
+  appAlerts: { type: Boolean, default: true },
+ },
  // Added for future role-based access control (RBAC) implementation
  // Added isAdmin field for all the Users, When we just had 2 or 3 Admin Accounts ?? 
  // I don’t optimize for storage

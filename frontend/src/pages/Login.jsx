@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Shield, ArrowLeft } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { ChevronLeft, AlertCircle, CheckCircle } from 'lucide-react';
 import { apiFetch } from '../lib/api';
 import { ForgotPasswordModal } from '../components/ForgotPasswordModal';
 import { useAuth } from '../context/AuthContext';
-import '../styles/auth-pages.css';
+
+const inputClass = "w-full px-3.5 py-2.5 text-[13px] border border-gray-200 rounded-lg bg-white text-gray-800 placeholder:text-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 focus:border-indigo-400 transition-colors";
 
 const Login = () => {
   const { login } = useAuth();
@@ -22,22 +22,13 @@ const Login = () => {
     setIsLoading(true);
     setError('');
     setSuccess('');
-
     try {
       const data = await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/login`, {
         method: 'POST',
         body: { email, password },
         showToast: false
       });
-
-      login({
-        id: data.user._id,
-        email: data.user.email,
-        isAdmin: data.user.isAdmin,
-        token: data.token
-      });
-      
-      // Navigate to dashboard
+      login({ id: data.user._id, email: data.user.email, isAdmin: data.user.isAdmin, token: data.token });
       navigate('/');
     } catch (err) {
       setError(err.message);
@@ -47,132 +38,113 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-container">
-      {/* Header with back button */}
-      <div className="auth-header-top">
-        <motion.button
+    <div
+      className="min-h-screen bg-[#f7f8fa] flex flex-col items-center justify-center px-4"
+      style={{ fontFamily: "'Inter', system-ui, sans-serif" }}
+    >
+      {/* Back button */}
+      <div className="w-full max-w-sm mb-4">
+        <button
           onClick={() => navigate('/')}
-          className="back-button"
-          whileHover={{ x: -5 }}
-          whileTap={{ scale: 0.95 }}
+          className="flex items-center gap-1 text-[13px] font-medium text-gray-500 hover:text-gray-800 transition-colors"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ChevronLeft size={15} />
           Back to Home
-        </motion.button>
+        </button>
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="auth-card"
-      >
-        {/* Header */}
-        <div className="auth-card-header">
-          <div className="auth-logo">
-            <Shield className="w-8 h-8 text-white" />
+      {/* Card */}
+      <div className="w-full max-w-sm bg-white rounded-2xl border border-gray-200/80 shadow-[0_4px_24px_rgba(0,0,0,0.07)] px-8 py-8">
+        {/* Logo + heading */}
+        <div className="flex flex-col items-center mb-7">
+          <div className="h-11 w-11 rounded-xl bg-indigo-600 flex items-center justify-center mb-4 shadow-sm">
+            <span className="text-white font-bold text-[18px]">₹</span>
           </div>
-          <h1>Sign In to Chitfunds</h1>
-          <p>Access your chit groups and manage your finances securely</p>
+          <h1 className="text-[20px] font-semibold text-gray-900">Sign in to Chitfunds</h1>
+          <p className="text-[13px] text-gray-400 mt-1 text-center">Manage your chit groups securely</p>
         </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label htmlFor="email">Email Address</label>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-1.5">
+            <label htmlFor="email" className="block text-[12px] font-semibold text-gray-500">Email Address</label>
             <input
               id="email"
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={e => setEmail(e.target.value)}
               placeholder="you@example.com"
-              className="form-input"
+              className={inputClass}
               required
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="password">Password</label>
+          <div className="space-y-1.5">
+            <label htmlFor="password" className="block text-[12px] font-semibold text-gray-500">Password</label>
             <input
               id="password"
               type="password"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              className="form-input"
+              onChange={e => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className={inputClass}
               required
             />
           </div>
 
-          <motion.button
-            type="button"
-            onClick={() => setShowForgotModal(true)}
-            className="forgot-password-link"
-            whileHover={{ x: 5 }}
-          >
-            Forgot Password?
-          </motion.button>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => setShowForgotModal(true)}
+              className="text-[12px] font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
+            >
+              Forgot password?
+            </button>
+          </div>
 
           {error && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="form-error"
-            >
+            <div className="flex items-center gap-2 text-[12px] text-red-600 bg-red-50 px-3 py-2.5 rounded-lg">
+              <AlertCircle size={13} className="shrink-0" />
               {error}
-            </motion.div>
+            </div>
           )}
-
           {success && (
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="form-success"
-            >
+            <div className="flex items-center gap-2 text-[12px] text-emerald-700 bg-emerald-50 px-3 py-2.5 rounded-lg">
+              <CheckCircle size={13} className="shrink-0" />
               {success}
-            </motion.div>
+            </div>
           )}
 
-          <motion.button
+          <button
             type="submit"
             disabled={isLoading}
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="auth-submit-button"
+            className="w-full py-2.5 bg-indigo-600 text-white text-[13px] font-semibold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-60 mt-1"
           >
-            {isLoading ? 'Signing In...' : 'Sign In'}
-          </motion.button>
+            {isLoading ? 'Signing in…' : 'Sign In'}
+          </button>
         </form>
 
-        {/* Sign Up Link */}
-        <div className="auth-footer-text">
-          <p>Don't have an account? <motion.button
+        {/* Footer */}
+        <p className="text-center text-[13px] text-gray-400 mt-6">
+          No account?{' '}
+          <button
             onClick={() => navigate('/signup')}
-            className="auth-link"
-            whileHover={{ textDecoration: 'underline' }}
+            className="font-semibold text-indigo-600 hover:text-indigo-800 transition-colors"
           >
-            Create one now
-          </motion.button></p>
-        </div>
+            Create one
+          </button>
+        </p>
 
-        {/* Trust Indicators */}
-        <div className="auth-trust-indicators">
-          <div className="indicator">
-            <div className="indicator-dot" />
-            <span>Bank-grade Security</span>
-          </div>
-          <div className="indicator">
-            <div className="indicator-dot" />
-            <span>Two-Factor Auth</span>
-          </div>
-          <div className="indicator">
-            <div className="indicator-dot" />
-            <span>ISO 27001 Certified</span>
-          </div>
+        {/* Trust indicators */}
+        <div className="flex items-center justify-center gap-4 mt-5 pt-5 border-t border-gray-100">
+          {['Bank-grade Security', 'OTP Verified', 'Data Encrypted'].map(label => (
+            <div key={label} className="flex items-center gap-1.5">
+              <span className="w-[5px] h-[5px] rounded-full bg-emerald-500 shrink-0" />
+              <span className="text-[11px] text-gray-400">{label}</span>
+            </div>
+          ))}
         </div>
-      </motion.div>
+      </div>
 
-      {/* Forgot Password Modal */}
       <ForgotPasswordModal isOpen={showForgotModal} onClose={() => setShowForgotModal(false)} />
     </div>
   );

@@ -40,7 +40,7 @@ groupRoute.get('/allGroups', async (req, res) => {
     const currentDate = new Date();
 
     const allGroups = await Group.find().select('-__v -updatedAt -createdAt -foremanCommission')
-                                        .populate('members.userId', 'firstName email');
+                                        .populate('members.userId', 'firstName lastName email alias isAdmin');
     // Attach status to each group
     const groupsWithStatus = allGroups.map(group => {
       const groupStart = new Date(group.startMonth);
@@ -189,6 +189,26 @@ groupRoute.patch('/leave/:groupid', userAuth, async (req, res) => {
     return res.status(200).json({ success: true, message: "You have left the group", group });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// PATCH /group/:groupId/banner — admin only
+groupRoute.patch('/:groupId/banner', userAuth, adminAuth, async (req, res) => {
+  try {
+    const { bannerEnabled, bannerTagline } = req.body;
+    const group = await Group.findByIdAndUpdate(
+      req.params.groupId,
+      { bannerEnabled: !!bannerEnabled, bannerTagline: (bannerTagline || '').trim() },
+      { new: true }
+    );
+    if (!group) return res.status(404).json({ success: false, message: 'Group not found' });
+    res.json({
+      success: true,
+      message: bannerEnabled ? 'Promotional banner enabled.' : 'Promotional banner disabled.',
+      group,
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
   }
 });
 

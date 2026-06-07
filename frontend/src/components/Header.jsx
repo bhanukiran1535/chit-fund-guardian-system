@@ -1,10 +1,32 @@
 import { Bell, LogOut, Shield, User } from 'lucide-react';
 import './Header.css';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ProfileDropdown from "./ProfileDropdown";
+import { apiFetch } from '../lib/api';
 
 export const Header = ({ user, onLogout }) => {
   const [showProfile, setShowProfile] = useState(false);
+  const [notificationCount, setNotificationCount] = useState(0);
+
+  useEffect(() => {
+    const API_BASE = import.meta.env.VITE_API_BASE_URL;
+    let canceled = false;
+    const fetchNotificationCount = async () => {
+      try {
+        const data = await apiFetch(`${API_BASE}/request/my`, { showToast: false });
+        if (!canceled && Array.isArray(data.requests)) {
+          setNotificationCount(data.requests.length);
+        }
+      } catch (err) {
+        if (!canceled) setNotificationCount(0);
+      }
+    };
+    fetchNotificationCount();
+    return () => {
+      canceled = true;
+    };
+  }, []);
+
   return (
     <header className="header">
       <div className="header-container">
@@ -20,9 +42,11 @@ export const Header = ({ user, onLogout }) => {
           </div>
 
           <div className="header-right">
-            <button className="notification-btn">
+            <button className="notification-btn" aria-label="View notifications">
               <Bell className="bell-icon" />
-              <span className="notification-count">3</span>
+              {notificationCount > 0 && (
+                <span className="notification-count">{notificationCount}</span>
+              )}
             </button>
 
             <div
@@ -30,7 +54,7 @@ export const Header = ({ user, onLogout }) => {
               onClick={() => setShowProfile(!showProfile)}
             >
               <User className="user-icon" />
-              <span className="user-name">{user.alias}</span>
+              <span className="user-name">{`${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`}</span>
             </div>
 
             {showProfile && <ProfileDropdown user={user} onLogout={onLogout} />}

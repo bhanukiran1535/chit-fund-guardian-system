@@ -1,4 +1,6 @@
 .group-card {
+  position: relative;
+  overflow: hidden;
   background: white;
   border-radius: 0.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -7,6 +9,27 @@
 
 .group-card:hover {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.group-card.completed {
+  filter: grayscale(1);
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+}
+
+.completed-stamp {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1;
+  background: rgba(15, 23, 42, 0.85);
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .card-header {
@@ -70,15 +93,17 @@
 
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
 }
 
 .info-item {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 0.5rem;
   font-size: 0.875rem;
+  min-width: 0;
+  flex-wrap: wrap;
 }
 
 .info-icon {
@@ -93,10 +118,33 @@
 
 .info-label {
   color: #6b7280;
+  flex: 1 1 100%;
+  min-width: 0;
 }
 
 .info-value {
   font-weight: 600;
+  min-width: 0;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.group-card.completed .status-badge {
+  background-color: #e5e7eb;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.group-card.completed .action-btn.primary,
+.group-card.completed .action-btn.secondary {
+  background-color: #ffffff;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.group-card.completed .action-btn.primary:hover,
+.group-card.completed .action-btn.secondary:hover {
+  background-color: #f3f4f6;
 }
 
 .card-actions {
