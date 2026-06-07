@@ -338,7 +338,7 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
               const isMyPrebookedMonth = hasPreBookedMonth === m.monthName;
               const canPrebook = m.status === 'upcoming' && !hasPreBookedMonth && adminMode === false;
               const prebookStatus = prebookStatuses[m.monthName];
-              const canPay = m.status === 'due' || m.status === 'pending';
+              const canPay = (m.status === 'due' || m.status === 'pending') && cashRequests[m.monthName] !== 'pending';
               const payoutAmount = isMyPrebookedMonth ? (shareAmount * 0.97) : null;
               const st = STATUS_CONFIG[m.status] || STATUS_CONFIG.upcoming;
               const rowBg = isMyPrebookedMonth
