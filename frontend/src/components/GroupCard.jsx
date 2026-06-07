@@ -8,68 +8,16 @@ const STATUS = {
   completed: { dot: 'bg-indigo-400',  label: 'Completed', text: 'text-indigo-600'  },
 };
 
-const CompletedStamp = ({ id }) => {
-  const topId = `stamp-top-${id}`;
-  const botId = `stamp-bot-${id}`;
-  return (
-    <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
-      <div style={{ transform: 'rotate(-12deg)' }}>
-        <svg viewBox="0 0 120 120" width="136" height="136" style={{ opacity: 0.6 }}>
-          <defs>
-            <path id={topId} d="M 17 60 A 43 43 0 0 1 103 60" />
-            <path id={botId} d="M 103 60 A 43 43 0 0 1 17 60" />
-          </defs>
-
-          {/* Outer scalloped ring */}
-          <circle cx="60" cy="60" r="55" fill="none" stroke="#6b7280" strokeWidth="2.5" strokeDasharray="4 2.5" />
-          {/* Solid outer ring */}
-          <circle cx="60" cy="60" r="50" fill="none" stroke="#6b7280" strokeWidth="2" />
-          {/* Inner ring */}
-          <circle cx="60" cy="60" r="44" fill="none" stroke="#6b7280" strokeWidth="1.5" />
-
-          {/* Stars — top cluster */}
-          <text x="38" y="30" fill="#6b7280" fontSize="7" textAnchor="middle">★</text>
-          <text x="60" y="24" fill="#6b7280" fontSize="7" textAnchor="middle">★</text>
-          <text x="82" y="30" fill="#6b7280" fontSize="7" textAnchor="middle">★</text>
-
-          {/* Stars — bottom cluster */}
-          <text x="38" y="99" fill="#6b7280" fontSize="7" textAnchor="middle">★</text>
-          <text x="60" y="104" fill="#6b7280" fontSize="7" textAnchor="middle">★</text>
-          <text x="82" y="99" fill="#6b7280" fontSize="7" textAnchor="middle">★</text>
-
-          {/* Curved text — top arc */}
-          <text fill="#6b7280" fontSize="8.5" fontWeight="700" letterSpacing="2.5">
-            <textPath href={`#${topId}`} startOffset="50%" textAnchor="middle">COMPLETED</textPath>
-          </text>
-
-          {/* Curved text — bottom arc */}
-          <text fill="#6b7280" fontSize="8.5" fontWeight="700" letterSpacing="2.5">
-            <textPath href={`#${botId}`} startOffset="50%" textAnchor="middle">COMPLETED</textPath>
-          </text>
-
-          {/* Ribbon left tail (notched arrow) */}
-          <polygon points="6,54 21,54 21,66 6,66 14,60" fill="#4b5563" />
-          {/* Ribbon right tail (notched arrow) */}
-          <polygon points="114,54 99,54 99,66 114,66 106,60" fill="#4b5563" />
-          {/* Center ribbon band */}
-          <rect x="19" y="50" width="82" height="20" fill="#374151" rx="2" />
-          {/* Center label */}
-          <text
-            x="60" y="63.5"
-            textAnchor="middle"
-            fill="white"
-            fontSize="11.5"
-            fontWeight="800"
-            letterSpacing="1.5"
-            fontFamily="system-ui, sans-serif"
-          >
-            COMPLETED
-          </text>
-        </svg>
-      </div>
+const CompletedRibbon = () => (
+  <div className="absolute top-0 right-0 w-24 h-24 overflow-hidden pointer-events-none z-10">
+    <div
+      className="absolute top-[18px] right-[-34px] w-[140px] text-center bg-emerald-600 text-white text-[10px] font-bold tracking-[0.18em] uppercase py-1 shadow-sm"
+      style={{ transform: 'rotate(45deg)' }}
+    >
+      Completed
     </div>
-  );
-};
+  </div>
+);
 
 export const GroupCard = ({ group }) => {
   const navigate = useNavigate();
@@ -108,7 +56,7 @@ export const GroupCard = ({ group }) => {
         }`}
     >
       {/* COMPLETED stamp overlay */}
-      {isCompleted && <CompletedStamp id={group._id || group.groupNo} />}
+      {isCompleted && <CompletedRibbon />}
 
       <div className="px-5 pt-5 pb-4 border-b border-gray-100">
         <div className="flex items-start justify-between">

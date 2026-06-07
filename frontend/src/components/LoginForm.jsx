@@ -129,13 +129,13 @@ export const LoginForm = ({ onLogin }) => {
         setEmail('');
         setPassword('');
       } else {
-        // Pass user data to parent (likely App.jsx or AuthProvider)
-        onLogin({
-          id: data.user._id,
-          email: data.user.email,
-          isAdmin: data.user.isAdmin,
-          token: data.token
-        });
+        // Fetch full user profile so name/email/etc are available immediately
+        try {
+          const me = await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/me`, { showToast: false });
+          onLogin(me?.user || { id: data.user._id, email: data.user.email, firstName: data.user.firstName, isAdmin: data.user.isAdmin, token: data.token });
+        } catch {
+          onLogin({ id: data.user._id, email: data.user.email, firstName: data.user.firstName, isAdmin: data.user.isAdmin, token: data.token });
+        }
       }
 
     } catch (err) {

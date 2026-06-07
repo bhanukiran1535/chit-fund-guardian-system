@@ -124,27 +124,32 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
     return curIndex >= preIndex ? base + base * 0.2 : base;
   };
 
-  const handlePayNow = (month) => { setSelectedMonth(month); setShowPaymentModal(true); };
+  const handlePayNow = (month) => {
+    if (cashRequests[month.monthName] === 'pending') {
+      toast.error('A cash payment request for this month is already pending.');
+      return;
+    }
+    setSelectedMonth(month);
+    setShowPaymentModal(true);
+  };
 
   const submitPayment = async (data) => {
     setLoading(true);
     try {
       if (data.paymentMethod === 'cash' && !adminMode) {
+        if (cashRequests[selectedMonth.monthName] === 'pending') {
+          toast.error('A cash payment request for this month is already pending.');
+          setShowPaymentModal(false);
+          setLoading(false);
+          return;
+        }
         await apiFetch(`${API}/request/payment`, {
           method: 'POST',
           body: { groupId, monthName: selectedMonth.monthName, amount: calculateAmount(selectedMonth.monthName, split, hasPreBookedMonth) },
         });
         setShowPaymentModal(false);
         toast.success('Cash payment confirmation request sent!');
-        const res = await fetch(`${API}/request/my`, { credentials: 'include' });
-        const dataReq = await res.json();
-        if (dataReq.success) {
-          const cashReqs = {};
-          dataReq.requests.forEach(r => {
-            if (r.type === 'confirm_cash_payment' && r.groupId._id === groupId) cashReqs[r.monthName] = r.status;
-          });
-          setCashRequests(cashReqs);
-        }
+        setCashRequests(prev => ({ ...prev, [selectedMonth.monthName]: 'pending' }));
       } else {
         await apiFetch(`${API}/payment/make`, {
           method: 'POST',
@@ -160,6 +165,10 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
   };
 
   const handleCashConfirmRequest = async (month) => {
+    if (cashRequests[month.monthName] === 'pending') {
+      toast.error('A cash payment request for this month is already pending.');
+      return;
+    }
     setLoading(true);
     try {
       await apiFetch(`${API}/request/payment`, {
@@ -167,15 +176,7 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
         body: { groupId, monthName: month.monthName, amount: calculateAmount(month.monthName, split, hasPreBookedMonth) },
       });
       toast.success('Cash payment confirmation request sent!');
-      const res = await fetch(`${API}/request/my`, { credentials: 'include' });
-      const data = await res.json();
-      if (data.success) {
-        const cashReqs = {};
-        data.requests.forEach(r => {
-          if (r.type === 'confirm_cash_payment' && r.groupId._id === groupId) cashReqs[r.monthName] = r.status;
-        });
-        setCashRequests(cashReqs);
-      }
+      setCashRequests(prev => ({ ...prev, [month.monthName]: 'pending' }));
     } catch (err) {
       toast.error('Failed to send cash payment confirmation request.');
     }
@@ -337,7 +338,7 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
               const isMyPrebookedMonth = hasPreBookedMonth === m.monthName;
               const canPrebook = m.status === 'upcoming' && !hasPreBookedMonth && adminMode === false;
               const prebookStatus = prebookStatuses[m.monthName];
-              const canPay = m.status === 'due' || m.status === 'pending';
+              const canPay = (m.status === 'due' || m.status === 'pending') && cashRequests[m.monthName] !== 'pending';
               const payoutAmount = isMyPrebookedMonth ? (shareAmount * 0.97) : null;
               const st = STATUS_CONFIG[m.status] || STATUS_CONFIG.upcoming;
               const rowBg = isMyPrebookedMonth
@@ -442,7 +443,7 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
               const isMyPrebookedMonth = hasPreBookedMonth === m.monthName;
               const canPrebook = m.status === 'upcoming' && !hasPreBookedMonth && adminMode === false;
               const prebookStatus = prebookStatuses[m.monthName];
-              const canPay = m.status === 'due' || m.status === 'pending';
+              const canPay = (m.status === 'due' || m.status === 'pending') && cashRequests[m.monthName] !== 'pending';
               const payoutAmount = isMyPrebookedMonth ? (shareAmount * 0.97) : null;
               const st = STATUS_CONFIG[m.status] || STATUS_CONFIG.upcoming;
               const rowBorder = isMyPrebookedMonth
@@ -528,7 +529,18 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
         </div>
 
         {/* Leave group */}
-        {!adminMode && months.length > 0 && months.every(m => m.status !== 'due' && m.status !== 'pending') && (
+        {(() => {
+          if (adminMode || months.length === 0) return null;
+          const hasOpenDues = months.some(m => m.status === 'due' || m.status === 'pending');
+          if (hasOpenDues) return null;
+          // Group is completed when its tenure window has fully elapsed
+          const isCompleted = groupInfo && (() => {
+            const end = new Date(groupInfo.startMonth);
+            end.setMonth(end.getMonth() + (groupInfo.tenure || 0));
+            return end <= new Date();
+          })();
+          if (isCompleted) return null;
+          return (
           <div className="flex justify-end pt-2">
             {leaveRequestStatus === 'pending' ? (
               <span className="text-[13px] text-amber-600 font-semibold">Leave request pending…</span>
@@ -542,7 +554,8 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
               </button>
             )}
           </div>
-        )}
+          );
+        })()}
       </div>
 
       {showPaymentModal && (
