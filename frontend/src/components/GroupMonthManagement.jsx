@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, DollarSign, Users, Calendar } from 'lucide-react';
+import { ChevronLeft, DollarSign, Users, Calendar, FileText } from 'lucide-react';
 import { MonthUserStatus } from './MonthUserStatus';
 import { apiFetch } from '../lib/api';
+import { PaymentInstructionForm } from './PaymentInstructionForm';
 
 const STATUS_CONFIG = {
   cleared:  { dot: 'bg-emerald-500', text: 'text-emerald-700', label: 'All Paid',        row: 'border-l-emerald-400 bg-emerald-50/30' },
@@ -17,6 +18,7 @@ export const GroupMonthManagement = () => {
   const [group, setGroup] = useState(null);
   const [months, setMonths] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(null);
+  const [instructionMonth, setInstructionMonth] = useState(null);
   const [loading, setLoading] = useState(true);
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
