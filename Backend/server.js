@@ -9,6 +9,7 @@ const monthRoute = require('./Routes/month')
 const requestRoute = require('./Routes/request')
 const cookieParser = require('cookie-parser');
 const PaymentRouter = require('./Routes/payment');
+const paymentInstructionRoute = require('./Routes/paymentInstruction');
 const { generalLimiter } = require('./middlewares/rateLimiter');
 const sanitizeInput = require('./middlewares/inputSanitizer');
 
@@ -73,6 +74,7 @@ app.use('/group',groupRoute);
 app.use('/month', monthRoute);
 app.use('/request', requestRoute);
 app.use('/payment', PaymentRouter);
+app.use('/payment-instruction', paymentInstructionRoute);
 
 const PORT = process.env.PORT || 3000;
 const HOST = 'localhost';

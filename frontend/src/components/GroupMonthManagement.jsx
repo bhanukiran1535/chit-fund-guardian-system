@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ChevronLeft, DollarSign, Users, Calendar } from 'lucide-react';
+import { ChevronLeft, DollarSign, Users, Calendar, FileText } from 'lucide-react';
 import { MonthUserStatus } from './MonthUserStatus';
 import { apiFetch } from '../lib/api';
+import { PaymentInstructionForm } from './PaymentInstructionForm';
 
 const STATUS_CONFIG = {
   cleared:  { dot: 'bg-emerald-500', text: 'text-emerald-700', label: 'All Paid',        row: 'border-l-emerald-400 bg-emerald-50/30' },
@@ -17,6 +18,7 @@ export const GroupMonthManagement = () => {
   const [group, setGroup] = useState(null);
   const [months, setMonths] = useState([]);
   const [selectedMonth, setSelectedMonth] = useState(null);
+  const [instructionMonth, setInstructionMonth] = useState(null);
   const [loading, setLoading] = useState(true);
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
@@ -228,9 +230,17 @@ export const GroupMonthManagement = () => {
                         {st.label}
                       </span>
                     </div>
-                    <button className="px-3 py-2 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[12px] font-semibold rounded-md min-h-[44px]">
-                      Details →
-                    </button>
+                    <div className="flex flex-col items-end gap-1.5 shrink-0">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setInstructionMonth(month.monthName); }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 bg-white border border-gray-200 text-gray-700 text-[11px] font-semibold rounded-md"
+                      >
+                        <FileText size={11} /> Instructions
+                      </button>
+                      <button className="px-3 py-2 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[12px] font-semibold rounded-md min-h-[44px]">
+                        Details →
+                      </button>
+                    </div>
                   </div>
                   <div className="flex items-center gap-3 text-[12px] text-gray-500">
                     <span>{stats.paidMembers}/{stats.totalMembers} paid</span>
@@ -296,7 +306,13 @@ export const GroupMonthManagement = () => {
                     ₹{stats.totalCollected.toLocaleString()}
                   </span>
 
-                  <div className="flex justify-end">
+                  <div className="flex justify-end gap-2">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setInstructionMonth(month.monthName); }}
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-white border border-gray-200 text-gray-700 text-[12px] font-semibold rounded-md hover:bg-gray-50 transition-colors"
+                    >
+                      <FileText size={11} /> Instructions
+                    </button>
                     <button className="px-2.5 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[12px] font-semibold rounded-md hover:bg-indigo-100 transition-colors">
                       View Details →
                     </button>
@@ -307,6 +323,14 @@ export const GroupMonthManagement = () => {
           </div>
         </div>
       </div>
+      {instructionMonth && (
+        <PaymentInstructionForm
+          groupId={groupId}
+          monthName={instructionMonth}
+          onClose={() => setInstructionMonth(null)}
+          onSaved={() => setInstructionMonth(null)}
+        />
+      )}
     </div>
   );
 };
