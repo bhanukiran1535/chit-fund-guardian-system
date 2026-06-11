@@ -392,6 +392,11 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
                     </div>
                   </div>
 
+                  {!adminMode && (m.status === 'due' || m.status === 'pending') && (
+                    <div className="mt-3 ml-7">
+                      <PaymentInstructionCard groupId={groupId} monthName={m.monthName} />
+                    </div>
+                  )}
                   {(canPay || (canPrebook && !prebookStatus) || (m.paymentMethod === 'cash' && m.status === 'pending' && !adminMode && !cashRequests[m.monthName])) && (
                     <div className="flex items-center gap-2 mt-3 ml-7">
                       {canPay && (
