@@ -323,6 +323,14 @@ export const GroupMonthManagement = () => {
           </div>
         </div>
       </div>
+      {instructionMonth && (
+        <PaymentInstructionForm
+          groupId={groupId}
+          monthName={instructionMonth}
+          onClose={() => setInstructionMonth(null)}
+          onSaved={() => setInstructionMonth(null)}
+        />
+      )}
     </div>
   );
 };
