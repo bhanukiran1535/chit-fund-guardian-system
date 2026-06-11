@@ -5,6 +5,7 @@ import { Progress } from './ui/progress';
 import { apiFetch } from '../lib/api';
 import { useForm } from 'react-hook-form';
 import { toast } from './ui/sonner';
+import { PaymentInstructionCard } from './PaymentInstructionCard';
 
 const STATUS_CONFIG = {
   paid:     { dot: 'bg-emerald-500', text: 'text-emerald-700', label: 'Paid'     },
