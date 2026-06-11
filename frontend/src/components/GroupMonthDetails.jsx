@@ -476,8 +476,8 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
                 : (m.status === 'due' ? 'border-l-[3px] border-l-red-400 bg-red-50/30' : 'border-l-[3px] border-l-transparent');
 
               return (
+                <div key={i}>
                 <div
-                  key={i}
                   className={`grid px-5 py-3.5 border-b border-gray-100 last:border-b-0 items-center hover:bg-gray-50/40 transition-colors text-[13px] ${rowBorder}`}
                   style={{ gridTemplateColumns: '2.5rem 1fr 8rem 8rem 10rem 10rem' }}
                 >
@@ -548,10 +548,17 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
                     )}
                   </div>
                 </div>
+                {!adminMode && (m.status === 'due' || m.status === 'pending') && (
+                  <div className="px-5 pb-3 border-b border-gray-100">
+                    <PaymentInstructionCard groupId={groupId} monthName={m.monthName} />
+                  </div>
+                )}
+                </div>
               );
             })}
           </div>
         </div>
+
 
         {/* Leave group */}
         {(() => {
