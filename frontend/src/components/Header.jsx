@@ -54,7 +54,7 @@ export const Header = ({ user, onLogout }) => {
               onClick={() => setShowProfile(!showProfile)}
             >
               <User className="user-icon" />
-              <span className="user-name">{`${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`}</span>
+              <span className="user-name">{user.firstName ? `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}` : (user.alias || user.email || 'User')}</span>
             </div>
 
             {showProfile && <ProfileDropdown user={user} onLogout={onLogout} />}

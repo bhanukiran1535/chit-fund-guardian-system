@@ -5,13 +5,13 @@ const STATUS = {
   pending:   { dot: 'bg-amber-400',   label: 'Pending',   text: 'text-amber-700'   },
   paid:      { dot: 'bg-emerald-500', label: 'Paid',      text: 'text-emerald-700' },
   due:       { dot: 'bg-red-500',     label: 'Due Now',   text: 'text-red-700'     },
-  completed: { dot: 'bg-indigo-400',  label: 'Completed', text: 'text-indigo-600'  },
+  completed: { dot: '',  label: '', text: 'text-indigo-600'  },
 };
 
 const CompletedRibbon = () => (
   <div className="absolute top-0 right-0 w-24 h-24 overflow-hidden pointer-events-none z-10">
     <div
-      className="absolute top-[18px] right-[-34px] w-[140px] text-center bg-emerald-600 text-white text-[10px] font-bold tracking-[0.18em] uppercase py-1 shadow-sm"
+      className="absolute top-[25px] right-[-34px] w-[140px] text-center bg-emerald-600 text-white text-[10px] font-bold tracking-[0.18em] uppercase py-1 shadow-sm"
       style={{ transform: 'rotate(45deg)' }}
     >
       Completed
@@ -57,7 +57,6 @@ export const GroupCard = ({ group }) => {
     >
       {/* COMPLETED stamp overlay */}
       {isCompleted && <CompletedRibbon />}
-
       <div className="px-5 pt-5 pb-4 border-b border-gray-100">
         <div className="flex items-start justify-between">
           <div>

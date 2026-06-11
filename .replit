@@ -1,28 +1,79 @@
-modules = ["nodejs-20", "web"]
-run = "npm run dev"
+modules = ["nodejs-20", "web", "python-3.11"]
+[agent]
+expertMode = true
+stack = "BEST_EFFORT_FALLBACK"
 
 [nix]
 channel = "stable-25_05"
 
-[deployment]
-run = ["sh", "-c", "npm run dev"]
+[userenv]
 
-[[ports]]
-localPort = 8080
-externalPort = 80
+[userenv.shared]
+NODE_ENV = "development"
+PORT = "3000"
+FRONTEND_ORIGIN = "http://localhost:5000"
+VITE_API_BASE_URL = "http://localhost:3000"
+VITE_APP_NAME = "Chit Fund Guardian"
+VITE_NODE_ENV = "development"
 
 [workflows]
-runButton = "Run"
+runButton = "Project"
 
 [[workflows.workflow]]
-name = "Run"
-author = 44855406
+name = "Project"
 mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Backend API"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd frontend && npm run dev"
+args = "npm run dev --prefix frontend"
+waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow]]
+name = "Backend API"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "cd Backend && npm run dev"
+waitForPort = 3000
+
+[[ports]]
+localPort = 3000
+externalPort = 3000
+exposeLocalhost = true
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 23636
+externalPort = 3001
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["bash", "-c", "cd Backend && node server.js"]
+build = ["bash", "-c", "cd frontend && npm install && npm run build && cd ../Backend && npm install"]
+
+[postMerge]
+path = "scripts/post-merge.sh"
+timeoutMs = 120000

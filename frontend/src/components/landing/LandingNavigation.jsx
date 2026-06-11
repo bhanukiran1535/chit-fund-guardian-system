@@ -64,7 +64,7 @@ const LandingNavigation = () => {
           >
             <button
               onClick={() => navigate('/login')}
-              className="hidden sm:block px-5 py-2 text-slate-700 font-medium hover:text-slate-900 transition-colors text-sm"
+              className="sm:block px-5 py-2 text-slate-700 font-medium hover:text-slate-900 transition-colors text-sm"
             >
               Sign In
             </button>

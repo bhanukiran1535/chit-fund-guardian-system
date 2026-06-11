@@ -32,6 +32,25 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
   const { groupId } = useParams();
   const API = import.meta.env.VITE_API_BASE_URL;
   const nav = useNavigate();
+
+  const safeBack = () => {
+    try {
+      // If there is history, go back one step
+      if (window.history.length > 1) {
+        nav(-1);
+        return;
+      }
+    } catch (e) {
+      // ignore
+    }
+    // Fallback: if admin view and userId available, go to that user's groups page
+    if (adminMode && userId) {
+      nav(`/admin/user/${userId}/groups`);
+      return;
+    }
+    // Otherwise go to home
+    nav('/');
+  };
   const [cashRequests, setCashRequests] = useState({});
   const [leaveRequestStatus, setLeaveRequestStatus] = useState(null);
 
@@ -273,7 +292,7 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
         <div className="max-w-5xl mx-auto px-4 sm:px-7 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => nav(-1)}
+              onClick={safeBack}
               className="flex items-center gap-1.5 text-[13px] font-medium text-gray-500 hover:text-gray-800 transition-colors"
             >
               <ChevronLeft size={16} />
@@ -443,7 +462,7 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
               const isMyPrebookedMonth = hasPreBookedMonth === m.monthName;
               const canPrebook = m.status === 'upcoming' && !hasPreBookedMonth && adminMode === false;
               const prebookStatus = prebookStatuses[m.monthName];
-              const canPay = (m.status === 'due' || m.status === 'pending') && cashRequests[m.monthName] !== 'pending';
+              const canPay = m.status === 'due' || m.status === 'pending';
               const payoutAmount = isMyPrebookedMonth ? (shareAmount * 0.97) : null;
               const st = STATUS_CONFIG[m.status] || STATUS_CONFIG.upcoming;
               const rowBorder = isMyPrebookedMonth
@@ -554,10 +573,9 @@ export const GroupMonthDetails = ({ adminMode: propAdminMode, userId: propUserId
               </button>
             )}
           </div>
-          );
+        );
         })()}
       </div>
-
       {showPaymentModal && (
         <PaymentModal
           onClose={() => setShowPaymentModal(false)}

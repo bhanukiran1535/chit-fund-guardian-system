@@ -129,13 +129,12 @@ export const LoginForm = ({ onLogin }) => {
         setEmail('');
         setPassword('');
       } else {
-        // Fetch full user profile so name/email/etc are available immediately
-        try {
-          const me = await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/me`, { showToast: false });
-          onLogin(me?.user || { id: data.user._id, email: data.user.email, firstName: data.user.firstName, isAdmin: data.user.isAdmin, token: data.token });
-        } catch {
-          onLogin({ id: data.user._id, email: data.user.email, firstName: data.user.firstName, isAdmin: data.user.isAdmin, token: data.token });
-        }
+        // Pass the full user profile into parent auth state so the name renders immediately
+        onLogin({
+          ...data.user,
+          id: data.user.id || data.user._id,
+          token: data.token,
+        });
       }
 
     } catch (err) {

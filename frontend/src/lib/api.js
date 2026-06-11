@@ -1,12 +1,44 @@
 import { toast } from '../components/ui/sonner';
 
+const DEFAULT_API_BASE_URL = 'http://localhost:3000';
+const envApiBase = import.meta.env.VITE_API_BASE_URL?.trim();
+const API_BASE_URL = envApiBase && envApiBase !== 'undefined' ? envApiBase.replace(/\/$/, '') : DEFAULT_API_BASE_URL;
+
+const buildUrl = (url) => {
+  if (typeof url !== 'string') {
+    throw new Error('API URL must be a string');
+  }
+
+  if (/^https?:\/\//.test(url)) {
+    return url;
+  }
+
+  let normalizedUrl = url.replace(/^undefined\/+/, '/');
+
+  if (normalizedUrl.startsWith('/') && API_BASE_URL.startsWith('/')) {
+    return normalizedUrl.startsWith(API_BASE_URL)
+      ? normalizedUrl
+      : `${API_BASE_URL}${normalizedUrl}`;
+  }
+
+  if (normalizedUrl.startsWith('/')) {
+    return `${API_BASE_URL}${normalizedUrl}`;
+  }
+
+  if (API_BASE_URL.startsWith('/')) {
+    return `${API_BASE_URL}/${normalizedUrl}`;
+  }
+
+  return `${API_BASE_URL}/${normalizedUrl}`;
+};
+
 export async function apiFetch(url, { method = 'GET', body, headers = {}, showToast = true } = {}) {
   try {
     let finalHeaders = { ...headers };
     if (['POST', 'PUT', 'DELETE'].includes(method)) {
       finalHeaders['Content-Type'] = 'application/json';
     }
-    const res = await fetch(url, {
+    const res = await fetch(buildUrl(url), {
       method,
       headers: finalHeaders,
       credentials: 'include',

@@ -103,7 +103,10 @@ export const UserGroupsView = () => {
         <div className="max-w-5xl mx-auto px-7 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                if (window.history.length > 1) navigate(-1);
+                else navigate('/admin/members');
+              }}
               className="flex items-center gap-1.5 text-[13px] font-medium text-gray-500 hover:text-gray-800 transition-colors"
             >
               <ChevronLeft size={16} />

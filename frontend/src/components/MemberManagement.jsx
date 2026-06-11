@@ -23,16 +23,23 @@ export const MemberManagement = () => {
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const groupsData = await apiFetch(`${API_BASE}/group/allGroups`, { showToast: false });
-      if (groupsData.success) {
+      const [groupsData, usersData] = await Promise.all([
+        apiFetch(`${API_BASE}/group/allGroups`, { showToast: false }),
+        apiFetch(`${API_BASE}/user/all`, { showToast: false }),
+      ]);
+
+      const userMap = new Map();
+
+      if (groupsData?.success) {
         setGroups(groupsData.groups);
-        const userMap = new Map();
         groupsData.groups.forEach(group => {
           if (group.members?.length > 0) {
             group.members.forEach(member => {
-              const userId = member.userId._id;
+              const userObj = member.userId || {};
+              const userId = userObj._id || userObj.id;
+              if (!userId) return;
               if (!userMap.has(userId)) {
-                userMap.set(userId, { userId: member.userId, totalGroups: 0, activeGroups: 0, completedGroups: 0, totalInvestment: 0, groups: [] });
+                userMap.set(userId, { userId: userObj, totalGroups: 0, activeGroups: 0, completedGroups: 0, totalInvestment: 0, groups: [] });
               }
               const user = userMap.get(userId);
               user.totalGroups++;
@@ -43,8 +50,20 @@ export const MemberManagement = () => {
             });
           }
         });
-        setUniqueUsers(Array.from(userMap.values()));
       }
+
+      // Include users that are not part of any group
+      if (usersData?.success && Array.isArray(usersData.users)) {
+        usersData.users.forEach(u => {
+          const uid = u._id || u.id;
+          if (!uid) return;
+          if (!userMap.has(uid)) {
+            userMap.set(uid, { userId: u, totalGroups: 0, activeGroups: 0, completedGroups: 0, totalInvestment: 0, groups: [] });
+          }
+        });
+      }
+
+      setUniqueUsers(Array.from(userMap.values()));
     } catch (error) {
     } finally {
       setLoading(false);

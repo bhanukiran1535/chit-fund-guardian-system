@@ -144,8 +144,10 @@ export const AppLayout = ({ children, pageTitle = 'Overview', activeView, onNavC
 
   if (!user) return null;
 
-  const initials = `${user.firstName?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase() || 'U';
-  const displayName = `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`;
+  const initials = `${user.firstName?.[0] ?? user.alias?.[0] ?? ''}${user.lastName?.[0] ?? ''}`.toUpperCase() || 'U';
+  const displayName = user.firstName
+    ? `${user.firstName}${user.lastName ? ` ${user.lastName}` : ''}`
+    : (user.alias || user.email || 'User');
 
   const userNavItems = [
     { id: 'groups',        icon: <LayoutDashboard size={15} />, label: 'Overview',      mobileIcon: <LayoutDashboard size={20} /> },

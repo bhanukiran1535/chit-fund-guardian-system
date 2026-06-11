@@ -23,14 +23,16 @@ const Login = () => {
     setError('');
     setSuccess('');
     try {
-      await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/login`, {
+      const data = await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/login`, {
         method: 'POST',
         body: { email, password },
         showToast: false
       });
-      // Fetch full profile so name/lastName are available immediately
-      const me = await apiFetch(`${import.meta.env.VITE_API_BASE_URL}/user/me`, { showToast: false });
-      if (me?.user) login(me.user);
+      login({
+        ...data.user,
+        id: data.user.id || data.user._id,
+        token: data.token,
+      });
       navigate('/');
     } catch (err) {
       setError(err.message);
@@ -138,7 +140,7 @@ const Login = () => {
 
         {/* Trust indicators */}
         <div className="flex items-center justify-center gap-4 mt-5 pt-5 border-t border-gray-100">
-          {['Bank-grade Security', 'OTP Verified', 'Data Encrypted'].map(label => (
+          {['Data Encrypted','Bank-grade Security'].map(label => (
             <div key={label} className="flex items-center gap-1.5">
               <span className="w-[5px] h-[5px] rounded-full bg-emerald-500 shrink-0" />
               <span className="text-[11px] text-gray-400">{label}</span>

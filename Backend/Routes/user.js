@@ -29,8 +29,26 @@ userRoute.post('/create',
       newUser.password = passwordHash; // Assign hashed password
       await newUser.save();  // insertOne is in MongoDB native
       welcomeMail(req.body.email,req.body.firstName);
-    // const newUser = await User.create(req.body);  
-      res.status(201).json({ success: true, user: { id: newUser._id, email: newUser.email, firstName: newUser.firstName } });
+      const token = await newUser.getJWT();
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'Strict',
+        maxAge: 3600000,
+      });
+      res.status(201).json({
+        success: true,
+        token,
+        user: {
+          id: newUser._id,
+          firstName: newUser.firstName,
+          lastName: newUser.lastName,
+          alias: newUser.alias,
+          email: newUser.email,
+          phoneNo: newUser.phoneNo,
+          isAdmin: newUser.isAdmin,
+        }
+      });
     } catch (err) {
       res.status(400).json({ success: false, message: err.message });
     }
@@ -248,9 +266,12 @@ userRoute.post('/login',
       res.status(200).json({
         success: true,
         message: "Login successful",
+        token,
         user: {
           id: user._id,
           firstName: user.firstName,
+          lastName: user.lastName,
+          alias: user.alias,
           email: user.email,
           isAdmin: user.isAdmin
         }
@@ -328,6 +349,16 @@ userRoute.get('/search', userAuth, adminAuth, async (req, res) => {
       ]
     }).select('_id firstName email alias');
     
+    res.status(200).json({ success: true, users });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+});
+
+// GET /all - return all users (admin only)
+userRoute.get('/all', userAuth, adminAuth, async (req, res) => {
+  try {
+    const users = await User.find().select('_id firstName lastName email alias phoneNo isAdmin');
     res.status(200).json({ success: true, users });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
