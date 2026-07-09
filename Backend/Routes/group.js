@@ -174,7 +174,7 @@ groupRoute.patch('/leave/:groupid', userAuth, async (req, res) => {
     }
 
     // Check if user is a member
-    const isMember = group.members.some(memberId => memberId.equals(userId));
+    const isMember = group.members.some(m => m.userId && m.userId.equals(userId));
     if (!isMember) {
       return res.status(400).json({ success: false, message: "You are not a member of this group" });
     }
@@ -183,7 +183,7 @@ groupRoute.patch('/leave/:groupid', userAuth, async (req, res) => {
       return res.status(400).json({ success: false, message: "This group has started you can't leave now" });
     }
     // Remove the user from members
-    group.members = group.members.filter(memberId => !memberId.equals(userId));
+    group.members = group.members.filter(m => !(m.userId && m.userId.equals(userId)));
     await group.save();
     
     return res.status(200).json({ success: true, message: "You have left the group", group });
