@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Eye, Users, AlertTriangle } from 'lucide-react';
+import { apiFetch } from '../lib/api';
 
 const STATUS_STYLE = {
   active:    { dot: 'bg-emerald-500', text: 'text-emerald-700' },
