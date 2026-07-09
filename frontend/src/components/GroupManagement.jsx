@@ -234,8 +234,8 @@ export const GroupManagement = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {groups.map((group) => {
-                    const current = calculateCurrentMonth(group.startMonth);
+                  {visibleGroups.map((group) => {
+                    const current = calculateCurrentMonth(group.startMonth, group.tenure);
                     const pct = group.tenure ? Math.min(Math.round((current / group.tenure) * 100), 100) : 0;
                     const st = STATUS_STYLE[group.status] || STATUS_STYLE.upcoming;
                     const bd = bannerData[group._id];
