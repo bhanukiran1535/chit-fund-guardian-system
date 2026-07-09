@@ -199,9 +199,8 @@ export const UserGroupsView = () => {
                         <td className="px-5 py-3.5">
                           <p className="font-semibold text-gray-800">Group {group.groupNo}</p>
                           <p className="text-[12px] text-gray-400">
-                            {group.userJoinDate
-                              ? `Joined ${new Date(group.userJoinDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}`
-                              : `${group.tenure} months`}
+                            Started {new Date(group.startMonth).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
+                            {' · '}{group.tenure} months
                           </p>
                         </td>
                         <td className="px-5 py-3.5 font-semibold text-gray-900">
