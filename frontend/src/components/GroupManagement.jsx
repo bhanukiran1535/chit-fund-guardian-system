@@ -1,17 +1,26 @@
-import { useEffect, useState, Fragment } from 'react';
+import { useEffect, useState, Fragment, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Settings, Plus, Users, Megaphone, Sparkles } from 'lucide-react';
+import { Eye, Settings, Users, Megaphone, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { GroupDetailsView } from './GroupDetailsView';
 import { apiFetch } from '../lib/api';
 
-function calculateCurrentMonth(startDateISO) {
+function calculateCurrentMonth(startDateISO, tenure) {
   const startDate = new Date(startDateISO);
   if (isNaN(startDate)) return 0;
   const now = new Date();
   const monthsPassed = (now.getFullYear() - startDate.getFullYear()) * 12 + (now.getMonth() - startDate.getMonth()) + 1;
-  return monthsPassed > 0 ? monthsPassed : 0;
+  if (monthsPassed <= 0) return 0;
+  if (tenure && monthsPassed > tenure) return tenure;
+  return monthsPassed;
 }
+
+const STATUS_FILTERS = [
+  { id: 'all',       label: 'All' },
+  { id: 'active',    label: 'Active' },
+  { id: 'upcoming',  label: 'Upcoming' },
+  { id: 'completed', label: 'Completed' },
+];
 
 const STATUS_STYLE = {
   active:    { dot: 'bg-emerald-500', text: 'text-emerald-700' },
