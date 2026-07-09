@@ -226,13 +226,13 @@ export const UserGroupsView = () => {
                           </span>
                         </td>
                         <td className="px-5 py-3.5">
-                          {group.userRole === 'foreman' ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
-                              👑 Foreman
-                            </span>
-                          ) : (
-                            <span className="text-[12px] text-gray-400 capitalize">{group.userRole}</span>
-                          )}
+                          <button
+                            onClick={() => setSelectedGroup(group)}
+                            className="flex items-center gap-1 px-2.5 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[12px] font-semibold rounded-md hover:bg-indigo-100 transition-colors"
+                          >
+                            <Eye size={12} />
+                            View Details
+                          </button>
                         </td>
                         <td className="px-5 py-3.5">
                           <button
