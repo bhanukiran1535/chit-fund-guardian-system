@@ -234,15 +234,6 @@ export const UserGroupsView = () => {
                             View Details
                           </button>
                         </td>
-                        <td className="px-5 py-3.5">
-                          <button
-                            onClick={() => setSelectedGroup(group)}
-                            className="flex items-center gap-1 px-2.5 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[12px] font-semibold rounded-md hover:bg-indigo-100 transition-colors"
-                          >
-                            <Eye size={12} />
-                            View Details
-                          </button>
-                        </td>
                       </tr>
                     );
                   })}
