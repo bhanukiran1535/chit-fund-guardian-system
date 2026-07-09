@@ -1,17 +1,26 @@
-import { useEffect, useState, Fragment } from 'react';
+import { useEffect, useState, Fragment, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, Settings, Plus, Users, Megaphone, Sparkles } from 'lucide-react';
+import { Eye, Settings, Users, Megaphone, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import { GroupDetailsView } from './GroupDetailsView';
 import { apiFetch } from '../lib/api';
 
-function calculateCurrentMonth(startDateISO) {
+function calculateCurrentMonth(startDateISO, tenure) {
   const startDate = new Date(startDateISO);
   if (isNaN(startDate)) return 0;
   const now = new Date();
   const monthsPassed = (now.getFullYear() - startDate.getFullYear()) * 12 + (now.getMonth() - startDate.getMonth()) + 1;
-  return monthsPassed > 0 ? monthsPassed : 0;
+  if (monthsPassed <= 0) return 0;
+  if (tenure && monthsPassed > tenure) return tenure;
+  return monthsPassed;
 }
+
+const STATUS_FILTERS = [
+  { id: 'all',       label: 'All' },
+  { id: 'active',    label: 'Active' },
+  { id: 'upcoming',  label: 'Upcoming' },
+  { id: 'completed', label: 'Completed' },
+];
 
 const STATUS_STYLE = {
   active:    { dot: 'bg-emerald-500', text: 'text-emerald-700' },
@@ -45,16 +54,13 @@ export const GroupManagement = () => {
   const navigate = useNavigate();
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+  const [statusFilter, setStatusFilter] = useState('all');
+
   const fetchGroups = async () => {
     setLoading(true);
     try {
-      const statuses = ['active', 'upcoming'];
-      const responses = await Promise.all(
-        statuses.map(status =>
-          apiFetch(`${API_BASE}/group/allGroups?status=${status}`, { showToast: false })
-        )
-      );
-      const allGroups = responses.flatMap(r => (r?.success ? r.groups : []));
+      const response = await apiFetch(`${API_BASE}/group/allGroups`, { showToast: false });
+      const allGroups = response?.success ? response.groups : [];
       setGroups(allGroups);
 
       const initial = {};
@@ -75,15 +81,25 @@ export const GroupManagement = () => {
 
   useEffect(() => { fetchGroups(); }, []);
 
+  const visibleGroups = useMemo(() => {
+    if (statusFilter === 'all') return groups;
+    return groups.filter(g => g.status === statusFilter);
+  }, [groups, statusFilter]);
+
+  const statusCounts = useMemo(() => {
+    const counts = { all: groups.length, active: 0, upcoming: 0, completed: 0 };
+    groups.forEach(g => { if (counts[g.status] !== undefined) counts[g.status]++; });
+    return counts;
+  }, [groups]);
+
   const saveBanner = async (groupId, overrides = {}) => {
     const current = { ...bannerData[groupId], ...overrides };
     setBannerData(prev => ({ ...prev, [groupId]: { ...prev[groupId], ...overrides, saving: true } }));
     try {
-      await fetch(`${API_BASE}/group/${groupId}/banner`, {
+      await apiFetch(`${API_BASE}/group/${groupId}/banner`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ bannerEnabled: current.enabled, bannerTagline: current.tagline }),
+        body: { bannerEnabled: current.enabled, bannerTagline: current.tagline },
+        showToast: false,
       });
       toast.success(current.enabled ? 'Promotional banner enabled.' : 'Banner disabled.');
     } catch {
@@ -112,25 +128,41 @@ export const GroupManagement = () => {
   return (
     <>
       <div className="bg-white rounded-xl border border-gray-200/80 shadow-[0_1px_4px_rgba(0,0,0,0.04)] overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
+        <div className="px-5 py-3.5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h2 className="text-[14px] font-semibold text-gray-900">Group Management</h2>
             <p className="text-[12px] text-gray-400 mt-0.5">Manage all chit fund groups and their members</p>
           </div>
-          <button className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] md:min-h-0 md:py-1.5 bg-indigo-600 text-white text-[12px] font-semibold rounded-md hover:bg-indigo-700 transition-colors">
-            <Plus size={13} />
-            Create Group
-          </button>
+          <div className="flex items-center gap-1 bg-gray-100/70 border border-gray-200 rounded-lg p-0.5 overflow-x-auto scrollbar-none">
+            {STATUS_FILTERS.map(f => (
+              <button
+                key={f.id}
+                onClick={() => setStatusFilter(f.id)}
+                className={`px-2.5 py-1.5 text-[12px] font-semibold rounded-md whitespace-nowrap transition-colors ${
+                  statusFilter === f.id
+                    ? 'bg-white text-gray-900 shadow-[0_1px_2px_rgba(0,0,0,0.06)]'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                {f.label}
+                <span className={`ml-1 text-[10px] font-bold ${statusFilter === f.id ? 'text-indigo-600' : 'text-gray-400'}`}>
+                  {statusCounts[f.id] ?? 0}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {groups.length === 0 ? (
-          <div className="px-5 py-12 text-center text-[13px] text-gray-400">No groups found.</div>
+        {visibleGroups.length === 0 ? (
+          <div className="px-5 py-12 text-center text-[13px] text-gray-400">
+            {groups.length === 0 ? 'No groups found.' : `No ${statusFilter} groups.`}
+          </div>
         ) : (
           <>
             {/* Mobile card list */}
             <div className="md:hidden divide-y divide-gray-100">
-              {groups.map((group) => {
-                const current = calculateCurrentMonth(group.startMonth);
+              {visibleGroups.map((group) => {
+                const current = calculateCurrentMonth(group.startMonth, group.tenure);
                 const pct = group.tenure ? Math.min(Math.round((current / group.tenure) * 100), 100) : 0;
                 const st = STATUS_STYLE[group.status] || STATUS_STYLE.upcoming;
                 return (
@@ -202,8 +234,8 @@ export const GroupManagement = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {groups.map((group) => {
-                    const current = calculateCurrentMonth(group.startMonth);
+                  {visibleGroups.map((group) => {
+                    const current = calculateCurrentMonth(group.startMonth, group.tenure);
                     const pct = group.tenure ? Math.min(Math.round((current / group.tenure) * 100), 100) : 0;
                     const st = STATUS_STYLE[group.status] || STATUS_STYLE.upcoming;
                     const bd = bannerData[group._id];

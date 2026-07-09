@@ -83,7 +83,7 @@ export const MemberManagement = () => {
     if (filterStatus !== 'all') {
       filtered = filtered.filter(user => {
         if (filterStatus === 'active') return user.activeGroups > 0;
-        if (filterStatus === 'completed') return user.completedGroups > 0 && user.activeGroups === 0;
+        if (filterStatus === 'completed') return user.completedGroups > 0;
         return true;
       });
     }
@@ -91,20 +91,6 @@ export const MemberManagement = () => {
   }, [uniqueUsers, debouncedSearchTerm, filterStatus]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-
-  const handleMemberAction = async (memberId, action) => {
-    try {
-      await apiFetch(`${API_BASE}/group/member-action`, { method: 'POST', body: { memberId, action } });
-      fetchData();
-    } catch (error) {}
-  };
-
-  const updateShareAmount = async (memberId, newAmount) => {
-    try {
-      await apiFetch(`${API_BASE}/group/update-share`, { method: 'POST', body: { memberId, shareAmount: newAmount } });
-      fetchData();
-    } catch (error) {}
-  };
 
   const saveAlias = async (userId) => {
     setAliasError('');
@@ -123,18 +109,19 @@ export const MemberManagement = () => {
   };
 
   const exportMemberData = () => {
+    const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const csvContent = [
-      ['Name', 'Email', 'Alias', 'Total Groups', 'Active Groups', 'Total Investment'].join(','),
+      ['Name', 'Email', 'Alias', 'Total Groups', 'Active Groups', 'Total Investment'].map(esc).join(','),
       ...filteredUsers.map(user => [
-        `${user.userId.firstName} ${user.userId.lastName}`,
+        `${user.userId.firstName || ''} ${user.userId.lastName || ''}`.trim(),
         user.userId.email,
         user.userId.alias || '',
         user.totalGroups,
         user.activeGroups,
-        user.totalInvestment
-      ].join(','))
+        user.totalInvestment,
+      ].map(esc).join(','))
     ].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -168,7 +155,7 @@ export const MemberManagement = () => {
           >
             <option value="all">All Users</option>
             <option value="active">With Active Groups</option>
-            <option value="completed">Completed Only</option>
+            <option value="completed">Has Completed Groups</option>
           </select>
           <button
             onClick={exportMemberData}
@@ -194,7 +181,11 @@ export const MemberManagement = () => {
         {filteredUsers.length === 0 ? (
           <div className="px-5 py-12 text-center">
             <Users className="mx-auto mb-3 opacity-30 text-gray-400" size={28} />
-            <p className="text-[13px] text-gray-400">No users found matching your criteria.</p>
+            <p className="text-[13px] text-gray-400">
+              {uniqueUsers.length === 0
+                ? 'No users yet.'
+                : 'No users match your search or filter.'}
+            </p>
           </div>
         ) : (
           <>

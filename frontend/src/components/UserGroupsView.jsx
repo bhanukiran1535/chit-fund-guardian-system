@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ChevronLeft, Eye, Users, AlertTriangle } from 'lucide-react';
+import { apiFetch } from '../lib/api';
 
 const STATUS_STYLE = {
   active:    { dot: 'bg-emerald-500', text: 'text-emerald-700' },
@@ -29,9 +30,8 @@ export const UserGroupsView = () => {
 
   const fetchUserData = async () => {
     try {
-      const userRes = await fetch(`${API_BASE}/user/${userId}`, { credentials: 'include' });
-      const userData = await userRes.json();
-      if (userData.success) {
+      const userData = await apiFetch(`${API_BASE}/user/${userId}`, { showToast: false });
+      if (userData?.success) {
         setUser(userData.user);
         await fetchUserGroups(userData.user);
       }
@@ -44,20 +44,17 @@ export const UserGroupsView = () => {
 
   const fetchUserGroups = async (userData) => {
     try {
-      const response = await fetch(`${API_BASE}/group/allGroups`, { credentials: 'include' });
-      const data = await response.json();
-      if (data.success) {
+      const data = await apiFetch(`${API_BASE}/group/allGroups`, { showToast: false });
+      if (data?.success) {
         const filteredGroups = data.groups.filter(group =>
-          group.members.some(member => member.userId._id === userData._id)
+          group.members.some(member => member.userId?._id === userData._id)
         );
         const enrichedGroups = filteredGroups.map(group => {
-          const userMember = group.members.find(member => member.userId._id === userData._id);
+          const userMember = group.members.find(member => member.userId?._id === userData._id);
           return {
             ...group,
-            userRole: userMember?.role || 'member',
             userShareAmount: userMember?.shareAmount || group.chitValue,
-            userJoinDate: userMember?.joinDate,
-            userPreBookedMonth: userMember?.preBookedMonth
+            userPreBookedMonth: userMember?.preBookedMonth,
           };
         });
         setUserGroups(enrichedGroups);
@@ -117,9 +114,8 @@ export const UserGroupsView = () => {
               {user.firstName} {user.lastName} — Groups
             </h1>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded bg-indigo-600 flex items-center justify-center text-white text-[11px] font-black select-none">MS</div>
-            <span className="text-[14px] font-semibold text-gray-900 tracking-tight hidden sm:block">ChitFund</span>
+          <div className="text-[12px] text-gray-400 hidden sm:block">
+            Admin view
           </div>
         </div>
       </header>
@@ -187,7 +183,6 @@ export const UserGroupsView = () => {
                     <th className="px-5 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">User Share</th>
                     <th className="px-5 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Payout Month</th>
                     <th className="px-5 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Status</th>
-                    <th className="px-5 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Role</th>
                     <th className="px-5 py-2.5 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Action</th>
                   </tr>
                 </thead>
@@ -204,9 +199,8 @@ export const UserGroupsView = () => {
                         <td className="px-5 py-3.5">
                           <p className="font-semibold text-gray-800">Group {group.groupNo}</p>
                           <p className="text-[12px] text-gray-400">
-                            {group.userJoinDate
-                              ? `Joined ${new Date(group.userJoinDate).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}`
-                              : `${group.tenure} months`}
+                            Started {new Date(group.startMonth).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })}
+                            {' · '}{group.tenure} months
                           </p>
                         </td>
                         <td className="px-5 py-3.5 font-semibold text-gray-900">
@@ -232,13 +226,13 @@ export const UserGroupsView = () => {
                           </span>
                         </td>
                         <td className="px-5 py-3.5">
-                          {group.userRole === 'foreman' ? (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
-                              👑 Foreman
-                            </span>
-                          ) : (
-                            <span className="text-[12px] text-gray-400 capitalize">{group.userRole}</span>
-                          )}
+                          <button
+                            onClick={() => setSelectedGroup(group)}
+                            className="flex items-center gap-1 px-2.5 py-1 bg-indigo-50 border border-indigo-100 text-indigo-700 text-[12px] font-semibold rounded-md hover:bg-indigo-100 transition-colors"
+                          >
+                            <Eye size={12} />
+                            View Details
+                          </button>
                         </td>
                         <td className="px-5 py-3.5">
                           <button
