@@ -155,7 +155,7 @@ export const MemberManagement = () => {
           >
             <option value="all">All Users</option>
             <option value="active">With Active Groups</option>
-            <option value="completed">Completed Only</option>
+            <option value="completed">Has Completed Groups</option>
           </select>
           <button
             onClick={exportMemberData}
