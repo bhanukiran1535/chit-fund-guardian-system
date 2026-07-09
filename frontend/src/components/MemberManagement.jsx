@@ -109,18 +109,19 @@ export const MemberManagement = () => {
   };
 
   const exportMemberData = () => {
+    const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
     const csvContent = [
-      ['Name', 'Email', 'Alias', 'Total Groups', 'Active Groups', 'Total Investment'].join(','),
+      ['Name', 'Email', 'Alias', 'Total Groups', 'Active Groups', 'Total Investment'].map(esc).join(','),
       ...filteredUsers.map(user => [
-        `${user.userId.firstName} ${user.userId.lastName}`,
+        `${user.userId.firstName || ''} ${user.userId.lastName || ''}`.trim(),
         user.userId.email,
         user.userId.alias || '',
         user.totalGroups,
         user.activeGroups,
-        user.totalInvestment
-      ].join(','))
+        user.totalInvestment,
+      ].map(esc).join(','))
     ].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
