@@ -114,9 +114,8 @@ export const UserGroupsView = () => {
               {user.firstName} {user.lastName} — Groups
             </h1>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded bg-indigo-600 flex items-center justify-center text-white text-[11px] font-black select-none">MS</div>
-            <span className="text-[14px] font-semibold text-gray-900 tracking-tight hidden sm:block">ChitFund</span>
+          <div className="text-[12px] text-gray-400 hidden sm:block">
+            Admin view
           </div>
         </div>
       </header>
