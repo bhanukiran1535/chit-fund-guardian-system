@@ -30,9 +30,8 @@ export const UserGroupsView = () => {
 
   const fetchUserData = async () => {
     try {
-      const userRes = await fetch(`${API_BASE}/user/${userId}`, { credentials: 'include' });
-      const userData = await userRes.json();
-      if (userData.success) {
+      const userData = await apiFetch(`${API_BASE}/user/${userId}`, { showToast: false });
+      if (userData?.success) {
         setUser(userData.user);
         await fetchUserGroups(userData.user);
       }
@@ -45,20 +44,17 @@ export const UserGroupsView = () => {
 
   const fetchUserGroups = async (userData) => {
     try {
-      const response = await fetch(`${API_BASE}/group/allGroups`, { credentials: 'include' });
-      const data = await response.json();
-      if (data.success) {
+      const data = await apiFetch(`${API_BASE}/group/allGroups`, { showToast: false });
+      if (data?.success) {
         const filteredGroups = data.groups.filter(group =>
-          group.members.some(member => member.userId._id === userData._id)
+          group.members.some(member => member.userId?._id === userData._id)
         );
         const enrichedGroups = filteredGroups.map(group => {
-          const userMember = group.members.find(member => member.userId._id === userData._id);
+          const userMember = group.members.find(member => member.userId?._id === userData._id);
           return {
             ...group,
-            userRole: userMember?.role || 'member',
             userShareAmount: userMember?.shareAmount || group.chitValue,
-            userJoinDate: userMember?.joinDate,
-            userPreBookedMonth: userMember?.preBookedMonth
+            userPreBookedMonth: userMember?.preBookedMonth,
           };
         });
         setUserGroups(enrichedGroups);
