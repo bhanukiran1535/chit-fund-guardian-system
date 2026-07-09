@@ -128,25 +128,41 @@ export const GroupManagement = () => {
   return (
     <>
       <div className="bg-white rounded-xl border border-gray-200/80 shadow-[0_1px_4px_rgba(0,0,0,0.04)] overflow-hidden">
-        <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
+        <div className="px-5 py-3.5 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h2 className="text-[14px] font-semibold text-gray-900">Group Management</h2>
             <p className="text-[12px] text-gray-400 mt-0.5">Manage all chit fund groups and their members</p>
           </div>
-          <button className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] md:min-h-0 md:py-1.5 bg-indigo-600 text-white text-[12px] font-semibold rounded-md hover:bg-indigo-700 transition-colors">
-            <Plus size={13} />
-            Create Group
-          </button>
+          <div className="flex items-center gap-1 bg-gray-100/70 border border-gray-200 rounded-lg p-0.5 overflow-x-auto scrollbar-none">
+            {STATUS_FILTERS.map(f => (
+              <button
+                key={f.id}
+                onClick={() => setStatusFilter(f.id)}
+                className={`px-2.5 py-1.5 text-[12px] font-semibold rounded-md whitespace-nowrap transition-colors ${
+                  statusFilter === f.id
+                    ? 'bg-white text-gray-900 shadow-[0_1px_2px_rgba(0,0,0,0.06)]'
+                    : 'text-gray-500 hover:text-gray-800'
+                }`}
+              >
+                {f.label}
+                <span className={`ml-1 text-[10px] font-bold ${statusFilter === f.id ? 'text-indigo-600' : 'text-gray-400'}`}>
+                  {statusCounts[f.id] ?? 0}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {groups.length === 0 ? (
-          <div className="px-5 py-12 text-center text-[13px] text-gray-400">No groups found.</div>
+        {visibleGroups.length === 0 ? (
+          <div className="px-5 py-12 text-center text-[13px] text-gray-400">
+            {groups.length === 0 ? 'No groups found.' : `No ${statusFilter} groups.`}
+          </div>
         ) : (
           <>
             {/* Mobile card list */}
             <div className="md:hidden divide-y divide-gray-100">
-              {groups.map((group) => {
-                const current = calculateCurrentMonth(group.startMonth);
+              {visibleGroups.map((group) => {
+                const current = calculateCurrentMonth(group.startMonth, group.tenure);
                 const pct = group.tenure ? Math.min(Math.round((current / group.tenure) * 100), 100) : 0;
                 const st = STATUS_STYLE[group.status] || STATUS_STYLE.upcoming;
                 return (
