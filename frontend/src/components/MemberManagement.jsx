@@ -83,7 +83,7 @@ export const MemberManagement = () => {
     if (filterStatus !== 'all') {
       filtered = filtered.filter(user => {
         if (filterStatus === 'active') return user.activeGroups > 0;
-        if (filterStatus === 'completed') return user.completedGroups > 0 && user.activeGroups === 0;
+        if (filterStatus === 'completed') return user.completedGroups > 0;
         return true;
       });
     }
@@ -91,20 +91,6 @@ export const MemberManagement = () => {
   }, [uniqueUsers, debouncedSearchTerm, filterStatus]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
-
-  const handleMemberAction = async (memberId, action) => {
-    try {
-      await apiFetch(`${API_BASE}/group/member-action`, { method: 'POST', body: { memberId, action } });
-      fetchData();
-    } catch (error) {}
-  };
-
-  const updateShareAmount = async (memberId, newAmount) => {
-    try {
-      await apiFetch(`${API_BASE}/group/update-share`, { method: 'POST', body: { memberId, shareAmount: newAmount } });
-      fetchData();
-    } catch (error) {}
-  };
 
   const saveAlias = async (userId) => {
     setAliasError('');
