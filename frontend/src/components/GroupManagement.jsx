@@ -54,16 +54,13 @@ export const GroupManagement = () => {
   const navigate = useNavigate();
   const API_BASE = import.meta.env.VITE_API_BASE_URL;
 
+  const [statusFilter, setStatusFilter] = useState('all');
+
   const fetchGroups = async () => {
     setLoading(true);
     try {
-      const statuses = ['active', 'upcoming'];
-      const responses = await Promise.all(
-        statuses.map(status =>
-          apiFetch(`${API_BASE}/group/allGroups?status=${status}`, { showToast: false })
-        )
-      );
-      const allGroups = responses.flatMap(r => (r?.success ? r.groups : []));
+      const response = await apiFetch(`${API_BASE}/group/allGroups`, { showToast: false });
+      const allGroups = response?.success ? response.groups : [];
       setGroups(allGroups);
 
       const initial = {};
@@ -84,15 +81,25 @@ export const GroupManagement = () => {
 
   useEffect(() => { fetchGroups(); }, []);
 
+  const visibleGroups = useMemo(() => {
+    if (statusFilter === 'all') return groups;
+    return groups.filter(g => g.status === statusFilter);
+  }, [groups, statusFilter]);
+
+  const statusCounts = useMemo(() => {
+    const counts = { all: groups.length, active: 0, upcoming: 0, completed: 0 };
+    groups.forEach(g => { if (counts[g.status] !== undefined) counts[g.status]++; });
+    return counts;
+  }, [groups]);
+
   const saveBanner = async (groupId, overrides = {}) => {
     const current = { ...bannerData[groupId], ...overrides };
     setBannerData(prev => ({ ...prev, [groupId]: { ...prev[groupId], ...overrides, saving: true } }));
     try {
-      await fetch(`${API_BASE}/group/${groupId}/banner`, {
+      await apiFetch(`${API_BASE}/group/${groupId}/banner`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ bannerEnabled: current.enabled, bannerTagline: current.tagline }),
+        body: { bannerEnabled: current.enabled, bannerTagline: current.tagline },
+        showToast: false,
       });
       toast.success(current.enabled ? 'Promotional banner enabled.' : 'Banner disabled.');
     } catch {
