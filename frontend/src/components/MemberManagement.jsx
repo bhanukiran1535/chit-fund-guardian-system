@@ -181,7 +181,11 @@ export const MemberManagement = () => {
         {filteredUsers.length === 0 ? (
           <div className="px-5 py-12 text-center">
             <Users className="mx-auto mb-3 opacity-30 text-gray-400" size={28} />
-            <p className="text-[13px] text-gray-400">No users found matching your criteria.</p>
+            <p className="text-[13px] text-gray-400">
+              {uniqueUsers.length === 0
+                ? 'No users yet.'
+                : 'No users match your search or filter.'}
+            </p>
           </div>
         ) : (
           <>
